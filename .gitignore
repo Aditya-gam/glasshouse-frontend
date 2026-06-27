@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+build/
+coverage/
+.turbo/
+
+# env — never commit
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log
