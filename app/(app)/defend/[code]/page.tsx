@@ -2,10 +2,10 @@ import { getDefendSimulation } from "@/lib/data/defend";
 
 import { DefendView, type DefendViewState } from "./_components/defend-view";
 
-const STATES: DefendViewState[] = ["loaded", "loading", "unproven", "nomeaning", "error"];
+const STATES = new Set<DefendViewState>(["loaded", "loading", "unproven", "nomeaning", "error"]);
 
 function normalizeState(state: string | undefined): DefendViewState {
-  return STATES.includes(state as DefendViewState) ? (state as DefendViewState) : "loaded";
+  return STATES.has(state as DefendViewState) ? (state as DefendViewState) : "loaded";
 }
 
 export default async function DefendPage({

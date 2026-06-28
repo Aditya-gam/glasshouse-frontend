@@ -14,10 +14,10 @@ export function highlight(text: string, quotes: string[] | undefined, klass: str
 
   const out: ReactNode[] = [];
   let pos = 0;
-  ranges.forEach((r, i) => {
+  ranges.forEach((r) => {
     if (r.start > pos) out.push(text.slice(pos, r.start));
     out.push(
-      <mark key={i} className={klass}>
+      <mark key={`${r.start}-${r.end}`} className={klass}>
         {text.slice(r.start, r.end)}
       </mark>,
     );

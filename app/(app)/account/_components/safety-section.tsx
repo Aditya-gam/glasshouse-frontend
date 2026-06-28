@@ -5,7 +5,7 @@ import { SAFETY_RESOURCES } from "@/lib/fixtures/account";
 
 /** Curated digital-safety + crisis resources. `emphasized` promotes it to the top
  *  under the at-risk lens (ethics-and-tone.md). Pointers, not advice. */
-export function SafetySection({ emphasized = false }: { emphasized?: boolean }) {
+export function SafetySection({ emphasized = false }: Readonly<{ emphasized?: boolean }>) {
   return (
     <>
       <div className="sec-head">

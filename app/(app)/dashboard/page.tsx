@@ -2,10 +2,10 @@ import { getAttributes } from "@/lib/data/attributes";
 
 import { Dashboard, type DashboardView } from "./_components/dashboard";
 
-const STATES: DashboardView[] = ["loaded", "loading", "empty", "abstained", "error"];
+const STATES = new Set<DashboardView>(["loaded", "loading", "empty", "abstained", "error"]);
 
 function normalizeState(state: string | undefined): DashboardView {
-  return STATES.includes(state as DashboardView) ? (state as DashboardView) : "loaded";
+  return STATES.has(state as DashboardView) ? (state as DashboardView) : "loaded";
 }
 
 export default async function DashboardPage({

@@ -14,7 +14,7 @@ export function CalibrationChart() {
   const py = (e: number) => Y0 - e * (Y0 - Y1);
   const ticks = [0, 0.25, 0.5, 0.75, 1];
   const pts = CALIB.map(([p, e]) => `${px(p).toFixed(1)},${py(e).toFixed(1)}`).join(" ");
-  const hi = CALIB.find(([p]) => p === 0.8);
+  const hi = CALIB.find(([p]) => Math.abs(p - 0.8) < 1e-9);
 
   return (
     <>

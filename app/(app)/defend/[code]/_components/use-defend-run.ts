@@ -31,7 +31,9 @@ export function useDefendRun(active: boolean, onDone: () => void): DefendRun {
         doneRef.current();
         return;
       }
-      const stage = t < ends[0] ? 0 : t < ends[1] ? 1 : 2;
+      let stage = 2;
+      if (t < ends[0]) stage = 0;
+      else if (t < ends[1]) stage = 1;
       setRun({ stage, status: "running" });
     }, TICK_MS);
     return () => clearInterval(id);

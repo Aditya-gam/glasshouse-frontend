@@ -5,7 +5,7 @@ import { NOISE } from "@/lib/fixtures/defend";
  *  (the "drop sits inside run-to-run noise") is legible — and honest. */
 export function IntervalCompare() {
   const D0 = 0.6;
-  const D1 = 1.0;
+  const D1 = 1;
   const x = (v: number) => ((v - D0) / (D1 - D0)) * 100;
   const oLo = Math.max(NOISE.afterLo, NOISE.beforeLo);
   const oHi = Math.min(NOISE.afterHi, NOISE.beforeHi);

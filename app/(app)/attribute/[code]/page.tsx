@@ -2,12 +2,10 @@ import { getLocationAttribution } from "@/lib/data/attribution";
 
 import { AttributionView, type AttributionViewState } from "./_components/attribution-view";
 
-const STATES: AttributionViewState[] = ["loaded", "loading", "empty", "error"];
+const STATES = new Set<AttributionViewState>(["loaded", "loading", "empty", "error"]);
 
 function normalizeState(state: string | undefined): AttributionViewState {
-  return STATES.includes(state as AttributionViewState)
-    ? (state as AttributionViewState)
-    : "loaded";
+  return STATES.has(state as AttributionViewState) ? (state as AttributionViewState) : "loaded";
 }
 
 export default async function AttributionPage({

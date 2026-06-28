@@ -43,11 +43,11 @@ export function ConnectScreen() {
     [],
   );
 
-  const importedIds = sources.map((s) => s.id);
+  const importedIds = new Set(sources.map((s) => s.id));
   const busy = job !== null || error;
 
   function startImport(src: Source) {
-    if (job || importedIds.includes(src.id)) return;
+    if (job || importedIds.has(src.id)) return;
     // M5.5: the X archive deterministically fails to parse (the realistic "wrong or
     // partial export" case). M5.4 wires real parsing + real failures.
     if (src.id === "x") {
@@ -119,7 +119,7 @@ export function ConnectScreen() {
             <SourceCard
               key={src.id}
               src={src}
-              imported={importedIds.includes(src.id)}
+              imported={importedIds.has(src.id)}
               busy={busy}
               onConnect={startImport}
             />
@@ -161,10 +161,10 @@ export function ConnectScreen() {
               key={src.id}
               type="button"
               className="fmt-chip"
-              disabled={busy || importedIds.includes(src.id)}
+              disabled={busy || importedIds.has(src.id)}
               onClick={() => startImport(src)}
             >
-              <Icon name={importedIds.includes(src.id) ? "check" : src.icon} size={15} /> {src.name}
+              <Icon name={importedIds.has(src.id) ? "check" : src.icon} size={15} /> {src.name}
             </button>
           ))}
         </div>
@@ -194,7 +194,7 @@ export function ConnectScreen() {
                 className="fmt-chip"
                 disabled={!!job || sources.length === ALL_SOURCES.length}
                 onClick={() => {
-                  const next = ALL_SOURCES.find((s) => !importedIds.includes(s.id) && s.id !== "x");
+                  const next = ALL_SOURCES.find((s) => !importedIds.has(s.id) && s.id !== "x");
                   if (next) startImport(next);
                 }}
               >

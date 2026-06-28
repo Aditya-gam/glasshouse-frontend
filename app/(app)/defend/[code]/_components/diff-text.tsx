@@ -4,19 +4,20 @@ import type { DiffSeg } from "@/lib/fixtures/defend";
 
 /** Renders a rewrite/decoy diff: deletions struck through, insertions highlighted,
  *  inserted falsehoods (insf) in amber. */
-export function DiffText({ segs }: { segs: DiffSeg[] }) {
+export function DiffText({ segs }: Readonly<{ segs: DiffSeg[] }>) {
   return (
     <p className="diff-text">
       {segs.map((s, i) => {
-        if (s.t === "del") return <del key={i}>{s.v}</del>;
-        if (s.t === "ins") return <ins key={i}>{s.v}</ins>;
+        const key = `${s.t}-${i}-${s.v}`;
+        if (s.t === "del") return <del key={key}>{s.v}</del>;
+        if (s.t === "ins") return <ins key={key}>{s.v}</ins>;
         if (s.t === "insf")
           return (
-            <ins key={i} className="ins-false">
+            <ins key={key} className="ins-false">
               {s.v}
             </ins>
           );
-        return <Fragment key={i}>{s.v}</Fragment>;
+        return <Fragment key={key}>{s.v}</Fragment>;
       })}
     </p>
   );

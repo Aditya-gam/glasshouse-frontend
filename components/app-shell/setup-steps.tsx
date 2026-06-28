@@ -18,7 +18,9 @@ export function SetupSteps({ active }: { active: SetupStep }) {
   return (
     <nav className="setup-steps" aria-label="Setup progress">
       {SETUP_STEPS.map((s, i) => {
-        const state = i < idx ? "done" : i === idx ? "current" : "todo";
+        let state: "done" | "current" | "todo" = "todo";
+        if (i < idx) state = "done";
+        else if (i === idx) state = "current";
         return (
           <Fragment key={s.key}>
             <span
