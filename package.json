@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "spec:pull": "curl -fsS \"${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}/openapi.json\" -o openapi/openapi.json",
+    "spec:pull": "curl -fsS \"${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}/openapi.json\" | python3 -m json.tool --sort-keys --indent 2 > openapi/openapi.json",
     "api:generate": "openapi-ts",
     "api:check": "openapi-ts && git diff --exit-code -- lib/api",
     "prepare": "husky"

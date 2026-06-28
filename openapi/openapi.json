@@ -1429,7 +1429,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -1528,7 +1528,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -1638,7 +1638,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -1746,7 +1746,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -1847,7 +1847,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -1957,7 +1957,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2061,7 +2061,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2170,7 +2170,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2271,7 +2271,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2374,7 +2374,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2484,7 +2484,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2566,7 +2566,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2647,7 +2647,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2746,7 +2746,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2845,7 +2845,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -2955,7 +2955,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -3093,7 +3093,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -3204,7 +3204,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -3324,7 +3324,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -3445,7 +3445,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -3566,7 +3566,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -3677,7 +3677,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -3782,7 +3782,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -3907,7 +3907,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -4018,7 +4018,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -4125,7 +4125,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -4236,7 +4236,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
@@ -4311,7 +4311,7 @@
               },
               "application/problem+json": {}
             },
-            "description": "Unprocessable Entity"
+            "description": "Unprocessable Content"
           },
           "501": {
             "content": {
