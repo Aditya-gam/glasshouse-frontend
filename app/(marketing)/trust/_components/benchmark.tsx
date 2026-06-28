@@ -2,6 +2,8 @@ import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BENCH } from "@/lib/fixtures/trust";
 
+const SKELETON_ROWS = ["a", "b", "c", "d", "e", "f", "g", "h"];
+
 function BenchSkeleton() {
   return (
     <div className="bench" aria-hidden="true">
@@ -9,8 +11,8 @@ function BenchSkeleton() {
         <Skeleton className="skb-legend" />
         <Skeleton className="skb-legend" />
       </div>
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div className="bench-row" key={i}>
+      {SKELETON_ROWS.map((id) => (
+        <div className="bench-row" key={id}>
           <Skeleton className="skb-label" />
           <Skeleton className="skb-track" />
           <Skeleton className="skb-vals" />
@@ -20,7 +22,7 @@ function BenchSkeleton() {
   );
 }
 
-export function BenchmarkSection({ loading }: { loading: boolean }) {
+export function BenchmarkSection({ loading }: Readonly<{ loading: boolean }>) {
   return (
     <section className="trust-sec">
       <p className="sec-eyebrow">

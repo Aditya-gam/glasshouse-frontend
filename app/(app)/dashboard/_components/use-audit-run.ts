@@ -37,17 +37,15 @@ export function useAuditRun(active: boolean, onDone: () => void): AuditRun {
         doneRef.current();
         return;
       }
+      // stage/revealed default to the retrieve phase (0/0); only the later phases change them.
       let stage = 0;
       let revealed = 0;
-      if (t < tRetrieve) {
-        stage = 0;
-        revealed = 0;
-      } else if (t < tInfer) {
-        stage = 1;
-        revealed = Math.floor(((t - tRetrieve) / (tInfer - tRetrieve)) * 8);
-      } else {
+      if (t >= tInfer) {
         stage = 2;
         revealed = Math.min(8, 5 + Math.floor(((t - tInfer) / (tCalib - tInfer)) * 3));
+      } else if (t >= tRetrieve) {
+        stage = 1;
+        revealed = Math.floor(((t - tRetrieve) / (tInfer - tRetrieve)) * 8);
       }
       setRun({ stage, revealed, status: "running" });
     }, TICK_MS);
