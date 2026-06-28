@@ -42,19 +42,19 @@ export function SkelChart() {
     <div className="skel-chart">
       <Skeleton className="skch-title" />
       <div className="skel-bars">
-        {heights.map((h, i) => (
-          <Skeleton key={i} className="skch-bar" style={{ height: h }} />
+        {heights.map((h) => (
+          <Skeleton key={h} className="skch-bar" style={{ height: h }} />
         ))}
       </div>
     </div>
   );
 }
 
-export function SkelGrid({ n = 6 }: { n?: number }) {
+export function SkelGrid({ n = 6 }: Readonly<{ n?: number }>) {
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-      {Array.from({ length: n }).map((_, i) => (
-        <SkelCard key={i} />
+      {Array.from({ length: n }, (_, i) => `skel-${i}`).map((id) => (
+        <SkelCard key={id} />
       ))}
     </div>
   );
