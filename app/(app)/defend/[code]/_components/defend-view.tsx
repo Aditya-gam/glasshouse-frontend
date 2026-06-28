@@ -74,7 +74,15 @@ export function DefendView({ initialState, target, options, decoyBackfire }: Def
       ]}
     />
   );
-  const diffMeta = opt.remove ? "removals" : opt.key === "decoy" ? "decoy suggestion" : "edits";
+  let diffMeta = "edits";
+  if (opt.remove) diffMeta = "removals";
+  else if (opt.key === "decoy") diffMeta = "decoy suggestion";
+
+  let runNote =
+    "Pick how far to go on the privacy ⁄ utility frontier; the proven result updates below.";
+  if (view === "loading") runNote = "Running the rewrite-and-prove loop now.";
+  else if (view === "unproven" || view === "nomeaning") runNote = "Here's the honest outcome.";
+  else if (view === "error") runNote = "Something interrupted the run.";
 
   return (
     <div>
@@ -83,14 +91,7 @@ export function DefendView({ initialState, target, options, decoyBackfire }: Def
         <div className="defend-head">
           <h1 className="defend-title">Break this inference</h1>
           <p className="defend-sub">
-            Targeting your <b>{target.attribute.toLowerCase()}</b> — Lisbon, Portugal.{" "}
-            {view === "loading"
-              ? "Running the rewrite-and-prove loop now."
-              : view === "unproven" || view === "nomeaning"
-                ? "Here's the honest outcome."
-                : view === "error"
-                  ? "Something interrupted the run."
-                  : "Pick how far to go on the privacy ⁄ utility frontier; the proven result updates below."}
+            Targeting your <b>{target.attribute.toLowerCase()}</b> — Lisbon, Portugal. {runNote}
           </p>
         </div>
 

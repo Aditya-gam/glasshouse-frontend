@@ -42,6 +42,17 @@ export function Dashboard({
   const showSafety = view === "loaded" && hasExtreme && !safetyDismissed;
   const lensLabel = LENSES.find((l) => l.key === lens)?.label ?? "Balanced";
 
+  let pageSub: string;
+  if (view === "loading") {
+    pageSub =
+      "Running the attack on your own footprint — each card appears as it's retrieved, inferred, and calibrated.";
+  } else if (view === "abstained") {
+    pageSub =
+      "We ran the full attack on your footprint and couldn't reliably infer anything. That's a good result — here's the honest breakdown.";
+  } else {
+    pageSub = `An AI read your public footprint and inferred ${count} of these 8 attributes about you. ${LENS_COPY[lens]}`;
+  }
+
   // Only `location` is wired end-to-end → its card is a link to the detail; the rest
   // surface a "not wired in this prototype" toast on Fix this.
   const fixToast = (attr: AttrItem) => () =>
@@ -104,16 +115,7 @@ export function Dashboard({
 
         {(view === "loaded" || view === "loading" || view === "abstained") && (
           <>
-            <PageHead
-              showCalib={view === "loaded"}
-              sub={
-                view === "loading"
-                  ? "Running the attack on your own footprint — each card appears as it's retrieved, inferred, and calibrated."
-                  : view === "abstained"
-                    ? "We ran the full attack on your footprint and couldn't reliably infer anything. That's a good result — here's the honest breakdown."
-                    : `An AI read your public footprint and inferred ${count} of these 8 attributes about you. ${LENS_COPY[lens]}`
-              }
-            />
+            <PageHead showCalib={view === "loaded"} sub={pageSub} />
 
             {view === "loaded" && (
               <div className="page-meta">

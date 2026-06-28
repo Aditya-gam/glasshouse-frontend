@@ -4,7 +4,9 @@ import { RunProgress } from "@/components/states/run-progress";
 const STAGE_LABELS = ["Parsing items", "Dropping third-party", "Encrypting + embedding"];
 
 export function stageIndex(progress: number): number {
-  return progress < 42 ? 0 : progress < 76 ? 1 : 2;
+  if (progress < 42) return 0;
+  if (progress < 76) return 1;
+  return 2;
 }
 
 export interface ImportJob {

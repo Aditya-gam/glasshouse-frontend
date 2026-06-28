@@ -85,7 +85,9 @@ export function OnboardingWizard() {
         <nav className="stepper" aria-label="Onboarding progress">
           <ol>
             {STEPS.map((s, i) => {
-              const status = i < step ? "done" : i === step ? "current" : "todo";
+              let status: "done" | "current" | "todo" = "todo";
+              if (i < step) status = "done";
+              else if (i === step) status = "current";
               return (
                 <Fragment key={s.key}>
                   <li>

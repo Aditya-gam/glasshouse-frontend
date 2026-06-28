@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 
 import { Icon } from "@/components/ui/icon";
 
@@ -48,19 +48,18 @@ export function RunProgress({
       </div>
       <div className="runprog-stages">
         {stages.map((label, i) => {
-          const state = i < current ? "done" : i === current ? "active" : "todo";
+          let state: "done" | "active" | "todo" = "todo";
+          if (i < current) state = "done";
+          else if (i === current) state = "active";
+
+          let dot: ReactNode = i + 1;
+          if (state === "done") dot = <Icon name="check" size={14} stroke={2.5} />;
+          else if (state === "active") dot = <span className="rp-spin" aria-hidden="true" />;
+
           return (
             <Fragment key={label}>
               <div className="rp-stage" data-state={state}>
-                <span className="rp-dot">
-                  {state === "done" ? (
-                    <Icon name="check" size={14} stroke={2.5} />
-                  ) : state === "active" ? (
-                    <span className="rp-spin" aria-hidden="true" />
-                  ) : (
-                    i + 1
-                  )}
-                </span>
+                <span className="rp-dot">{dot}</span>
                 <span className="rp-label">{label}</span>
               </div>
               {i < stages.length - 1 && <span className="rp-conn" data-done={i < current} />}
