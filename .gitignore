@@ -15,6 +15,9 @@ test-results/
 playwright-report/
 *.pem
 
+# local preview/dev launcher (machine-specific)
+.claude/launch.json
+
 # env — never commit
 .env
 .env.*
