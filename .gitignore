@@ -5,6 +5,16 @@ build/
 coverage/
 .turbo/
 
+# next.js
+next-env.d.ts
+*.tsbuildinfo
+
+# deploy / tooling
+.vercel
+test-results/
+playwright-report/
+*.pem
+
 # env — never commit
 .env
 .env.*
