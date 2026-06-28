@@ -39,7 +39,7 @@ export function TrustScreen({ initialState }: { initialState: TrustViewState }) 
         </div>
       </header>
 
-      <div className="trust-wrap">
+      <main className="trust-wrap">
         <section className="trust-hero">
           <p className="eyebrow-trust">Accuracy &amp; trust</p>
           <h1 className="trust-h1">How do we know these numbers?</h1>
@@ -198,7 +198,7 @@ export function TrustScreen({ initialState }: { initialState: TrustViewState }) 
             pinned per result.
           </p>
         </section>
-      </div>
+      </main>
     </div>
   );
 }

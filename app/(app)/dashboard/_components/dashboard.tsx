@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -31,7 +30,6 @@ export function Dashboard({
   attrs: AttrItem[];
   initialState: DashboardView;
 }) {
-  const router = useRouter();
   const { lens } = useLens();
   const [view, setView] = useState<DashboardView>(initialState);
   const [safetyDismissed, setSafetyDismissed] = useState(false);
@@ -44,13 +42,10 @@ export function Dashboard({
   const showSafety = view === "loaded" && hasExtreme && !safetyDismissed;
   const lensLabel = LENSES.find((l) => l.key === lens)?.label ?? "Balanced";
 
-  const openLocation = () => router.push("/attribute/location");
-  const makeFix = (attr: AttrItem) =>
-    attr.code === "location"
-      ? openLocation
-      : () => toast(`${attr.label}: only the location finding is wired in this prototype`);
-  const makeEvidence = (attr: AttrItem) => (attr.code === "location" ? openLocation : null);
-  const makeOpen = (attr: AttrItem) => (attr.code === "location" ? openLocation : null);
+  // Only `location` is wired end-to-end → its card is a link to the detail; the rest
+  // surface a "not wired in this prototype" toast on Fix this.
+  const fixToast = (attr: AttrItem) => () =>
+    toast(`${attr.label}: only the location finding is wired in this prototype`);
 
   const runStatus = {
     loaded: (
@@ -200,7 +195,6 @@ export function Dashboard({
                       key={attr.code}
                       attr={{ ...attr, abstain: true }}
                       level="abstain"
-                      onFix={() => {}}
                     />
                   ))
                 : ordered.map((attr, i) => {
@@ -211,9 +205,8 @@ export function Dashboard({
                         key={attr.code}
                         attr={attr}
                         level={severityFor(attr, lens)}
-                        onFix={makeFix(attr)}
-                        onEvidence={makeEvidence(attr)}
-                        onOpen={makeOpen(attr)}
+                        detailHref={attr.code === "location" ? "/attribute/location" : null}
+                        onFix={attr.code === "location" ? undefined : fixToast(attr)}
                       />
                     );
                   })}
