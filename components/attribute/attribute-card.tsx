@@ -1,10 +1,11 @@
 "use client";
 
-import type { HTMLAttributes, KeyboardEvent } from "react";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { AttrItem, DisplaySeverity } from "@/lib/schemas/attribute";
+import { cn } from "@/lib/utils";
 
 import { ReliabilityBar } from "./reliability-bar";
 import { SeverityChip } from "./severity-chip";
@@ -14,15 +15,17 @@ import "./attribute.css";
 interface AttributeCardProps {
   attr: AttrItem;
   level: DisplaySeverity;
-  onFix: () => void;
-  /** Renders the "evidence ›" link when set (only the wired location attribute). */
-  onEvidence?: (() => void) | null;
-  /** Makes the whole card a button (the §6 nested-interactive pattern — the
-   *  card-as-link/overlay refactor is M5.7). */
-  onOpen?: (() => void) | null;
+  /**
+   * When set, the whole card is a single link to the detail (the wired `location`
+   * attribute) — evidence + "Fix this" render as decorative affordances inside it, so
+   * there are no nested interactive elements (the §6 a11y refactor).
+   */
+  detailHref?: string | null;
+  /** "Fix this" handler for non-linked attributes (a toast in M5.5). */
+  onFix?: () => void;
 }
 
-export function AttributeCard({ attr, level, onFix, onEvidence, onOpen }: AttributeCardProps) {
+export function AttributeCard({ attr, level, detailHref, onFix }: AttributeCardProps) {
   if (attr.abstain) {
     return (
       <div className="attr-card attr-card--abstain">
@@ -44,24 +47,8 @@ export function AttributeCard({ attr, level, onFix, onEvidence, onOpen }: Attrib
     );
   }
 
-  const open = onOpen ?? null;
-  const cardProps: HTMLAttributes<HTMLDivElement> = open
-    ? {
-        role: "button",
-        tabIndex: 0,
-        "aria-label": `Open ${attr.label} detail`,
-        onClick: open,
-        onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            open();
-          }
-        },
-      }
-    : {};
-
-  return (
-    <div className={"attr-card" + (open ? " attr-card--clickable" : "")} {...cardProps}>
+  const body = (
+    <>
       <div className="attr-head">
         <span className="attr-label">{attr.label}</span>
         <SeverityChip level={level} />
@@ -75,7 +62,6 @@ export function AttributeCard({ attr, level, onFix, onEvidence, onOpen }: Attrib
           </span>
         )}
       </div>
-
       {attr.reliability != null && attr.lo != null && attr.hi != null && (
         <div className="rel">
           <div className="rel-top">
@@ -88,37 +74,42 @@ export function AttributeCard({ attr, level, onFix, onEvidence, onOpen }: Attrib
           </div>
         </div>
       )}
+    </>
+  );
 
-      <div className="attr-foot">
-        {onEvidence ? (
-          <button
-            type="button"
-            className="attr-evidence attr-evidence--link"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEvidence();
-            }}
-            aria-label={`See why: ${attr.evidence}`}
-          >
-            <Icon name="file-text" size={14} />
-            <span>{attr.evidence}</span>
-            <Icon name="chevron-right" size={13} />
-          </button>
-        ) : (
+  // Linked card (location): one stretched link, decorative foot — no nested buttons.
+  if (detailHref) {
+    return (
+      <Link
+        href={detailHref}
+        className="attr-card attr-card--link"
+        aria-label={`Open ${attr.label} detail`}
+      >
+        {body}
+        <div className="attr-foot" aria-hidden="true">
           <span className="attr-evidence">
             <Icon name="file-text" size={14} />
             <span>{attr.evidence}</span>
+            <Icon name="chevron-right" size={13} />
           </span>
-        )}
-        <Button
-          className="fix-btn"
-          variant="secondary"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onFix();
-          }}
-        >
+          <span className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "fix-btn")}>
+            Fix this <Icon name="arrow-right" size={14} />
+          </span>
+        </div>
+      </Link>
+    );
+  }
+
+  // Non-linked card: a single real action (Fix this), no whole-card link.
+  return (
+    <div className="attr-card">
+      {body}
+      <div className="attr-foot">
+        <span className="attr-evidence">
+          <Icon name="file-text" size={14} />
+          <span>{attr.evidence}</span>
+        </span>
+        <Button className="fix-btn" variant="secondary" size="sm" onClick={onFix}>
           Fix this <Icon name="arrow-right" size={14} />
         </Button>
       </div>

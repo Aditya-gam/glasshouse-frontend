@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { RouteFocus } from "@/components/app-shell/route-focus";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -43,6 +44,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster />
+          <RouteFocus />
         </ThemeProvider>
       </body>
     </html>

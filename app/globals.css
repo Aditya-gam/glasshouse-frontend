@@ -107,6 +107,11 @@
 :root {
   --radius: 12px;
 
+  /* Primary BUTTON background — a fixed deeper teal (same in light + dark, so it
+     doesn't flip like a Radix step) so white label text meets WCAG AA (≥4.5:1).
+     --primary (teal-9) stays the brighter brand fill for non-text (bars, dots, mark). */
+  --primary-strong: #0a6d61;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -156,13 +161,15 @@
 
   --foreground: var(--sand-12);
   --muted-foreground: var(--sand-11);
-  --subtle-foreground: var(--sand-10);
+  /* sand-11 (not sand-10): WCAG AA for the small caption text that uses this token. */
+  --subtle-foreground: var(--sand-11);
 
   --primary: var(--teal-9);
   --primary-hover: var(--teal-10);
   --primary-foreground: #ffffff;
   --accent: var(--teal-3);
-  --accent-foreground: var(--teal-11);
+  /* teal-12 (not -11): text on the teal-3 accent surface needs WCAG AA (4.5:1). */
+  --accent-foreground: var(--teal-12);
   --accent-border: var(--teal-7);
   --accent-text: var(--teal-11);
 
@@ -173,10 +180,12 @@
 
   --success: var(--jade-9);
   --success-soft: var(--jade-3);
-  --success-foreground: var(--jade-11);
+  /* jade-12 (not -11): text on the jade-3 success surface needs WCAG AA. */
+  --success-foreground: var(--jade-12);
   --warning: var(--amber-9);
   --warning-soft: var(--amber-3);
-  --warning-foreground: var(--amber-11);
+  /* amber-12 (not -11): amber-11 on amber-soft is below WCAG AA (4.5:1). */
+  --warning-foreground: var(--amber-12);
   --destructive: var(--tomato-9);
   --destructive-hover: var(--tomato-10);
   --destructive-soft: var(--tomato-3);
@@ -194,15 +203,16 @@
   /* Severity ramp — green / amber / orange / red. */
   --sev-low-solid: var(--green-9);
   --sev-low-bg: var(--green-3);
-  --sev-low-text: var(--green-11);
+  --sev-low-text: var(--green-12);
   --sev-low-border: var(--green-7);
   --sev-mod-solid: var(--amber-9);
   --sev-mod-bg: var(--amber-3);
-  --sev-mod-text: var(--amber-11);
+  /* amber/orange step 12 (not 11): the step-11 text is below WCAG AA on step-3 bg. */
+  --sev-mod-text: var(--amber-12);
   --sev-mod-border: var(--amber-7);
   --sev-high-solid: var(--orange-9);
   --sev-high-bg: var(--orange-3);
-  --sev-high-text: var(--orange-11);
+  --sev-high-text: var(--orange-12);
   --sev-high-border: var(--orange-7);
   --sev-ext-solid: var(--red-9);
   --sev-ext-bg: var(--red-3);

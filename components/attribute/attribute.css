@@ -128,22 +128,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.attr-evidence--link {
-  border: none;
-  background: none;
-  cursor: pointer;
-  padding: 0;
-  border-radius: var(--radius-sm);
-  transition: color var(--duration-fast) var(--ease-standard);
-}
-.attr-evidence--link:hover,
-.attr-evidence--link:hover svg {
-  color: var(--accent-text);
-}
-.attr-evidence--link:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-focus);
-}
 .fix-btn {
   flex: none;
 }
@@ -178,11 +162,23 @@
   flex: none;
 }
 
-/* clickable card (whole-card open) */
-.attr-card--clickable {
+/* whole-card link (the wired location attribute) — single interactive element */
+.attr-card--link {
+  text-decoration: none;
+  color: inherit;
   cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
 }
-.attr-card--clickable:focus-visible {
+.attr-card--link:hover {
+  border-color: var(--border-strong);
+}
+.attr-card--link:hover .attr-evidence,
+.attr-card--link:hover .attr-evidence svg {
+  color: var(--accent-text);
+}
+.attr-card--link:focus-visible {
   outline: none;
   box-shadow: var(--shadow-focus);
 }
