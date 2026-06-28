@@ -1,5 +1,7 @@
 # Glasshouse — Frontend
 
+![CI](https://img.shields.io/github/actions/workflow/status/Aditya-gam/glasshouse-frontend/ci.yml?label=CI) ![Next.js](https://img.shields.io/badge/Next.js-16-000000) ![license](https://img.shields.io/badge/license-MIT-blue)
+
 Next.js frontend for **Glasshouse** (privacy self-audit: **Attack → Measure → Defend**). Part of the
 [glasshouse](https://github.com/Aditya-gam/glasshouse) project — the spec (`docs/`) and the UI prototype
 live in the hub repo.
