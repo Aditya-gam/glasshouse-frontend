@@ -1,0 +1,378 @@
+/* Account & data rights — control + transparency. Calm throughout; the destructive
+ * delete is clear but never alarmist. Ported onto the M5.3 tokens. */
+
+.account-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 22px 24px 72px;
+}
+.acct-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.acct-back:hover {
+  color: var(--foreground);
+}
+.acct-back:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.acct-back svg {
+  flex: none;
+}
+.account-title {
+  margin: 0;
+  font-weight: 500;
+  font-size: 27px;
+  letter-spacing: -0.01em;
+}
+.account-sub {
+  margin: 7px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.sec {
+  margin-top: 30px;
+}
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.sec-head h2 {
+  margin: 0;
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+.sec-head-ic {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  background: var(--secondary);
+  color: var(--foreground);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.sec-desc {
+  margin: 0 0 14px 40px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.sec-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+.sec-card-pad {
+  padding: 18px 20px;
+}
+
+/* generic row inside a section card */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.row:last-child {
+  border-bottom: none;
+}
+.row-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--secondary);
+  color: var(--foreground);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.row-body {
+  flex: 1;
+  min-width: 0;
+}
+.row-name {
+  font-size: 14.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.row-desc {
+  margin-top: 3px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+.row-meta {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--subtle-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.row-action {
+  flex: none;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 500 11px var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+}
+.status-on {
+  background: var(--success-soft);
+  color: var(--success-foreground);
+}
+.status-off {
+  background: var(--secondary);
+  color: var(--muted-foreground);
+}
+.status-art9 {
+  background: var(--info-soft);
+  color: var(--info-foreground);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-text);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.link-btn:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.link-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.link-btn--danger {
+  color: var(--destructive-text);
+}
+
+/* retention segmented + description */
+.ret-seg-wrap {
+  padding: 18px 20px;
+}
+.ret-current {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.ret-current b {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+/* export */
+.export-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  flex-wrap: wrap;
+}
+.export-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+/* safety resources */
+.safety-sec .sec-card {
+  border-color: color-mix(in srgb, var(--info) 26%, var(--border));
+}
+.safety-intro {
+  display: flex;
+  gap: 11px;
+  padding: 14px 20px;
+  background: var(--info-soft);
+  border-bottom: 1px solid color-mix(in srgb, var(--info) 22%, transparent);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--info-foreground);
+}
+.safety-intro svg {
+  color: var(--info);
+  flex: none;
+  margin-top: 1px;
+}
+.res-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+}
+.res-row:last-child {
+  border-bottom: none;
+}
+.res-row:hover {
+  background: var(--secondary);
+}
+.res-row:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.res-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: var(--info-soft);
+  color: var(--info);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.res-body {
+  flex: 1;
+  min-width: 0;
+}
+.res-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+.res-desc {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+.res-row > svg {
+  color: var(--subtle-foreground);
+  flex: none;
+}
+.safety-foot {
+  padding: 12px 20px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--subtle-foreground);
+}
+
+/* delete account (calm destructive) */
+.danger-sec .sec-card {
+  border-color: color-mix(in srgb, var(--destructive) 28%, var(--border));
+}
+.danger-pad {
+  padding: 18px 20px;
+}
+.danger-list {
+  margin: 12px 0 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.danger-list li {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+.danger-list li svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--muted-foreground);
+}
+.danger-list li b {
+  font-weight: 500;
+}
+.danger-caveat {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--warning-soft);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--foreground);
+  margin-bottom: 16px;
+}
+.danger-caveat svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--warning);
+}
+
+/* caution + destructive button overrides (route-scoped) */
+.btn-warn {
+  background: var(--warning);
+  color: #1c1813;
+  border-color: transparent;
+}
+.btn-warn:hover {
+  background: color-mix(in srgb, var(--warning) 86%, #000);
+}
+.btn-danger {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+  border-color: transparent;
+}
+.btn-danger:hover {
+  background: var(--destructive-hover);
+}
+
+/* delete dialog */
+.del-confirm {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 4px;
+  padding: 11px 13px;
+  border-radius: var(--radius-md);
+  background: var(--secondary);
+}
+.del-confirm [data-slot="switch"] {
+  margin-top: 1px;
+}
+.del-confirm-t {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--foreground);
+}
+
+@media (max-width: 560px) {
+  .account-wrap {
+    padding: 18px 16px 56px;
+  }
+  .sec-desc {
+    margin-left: 0;
+  }
+  .row {
+    padding: 14px 16px;
+  }
+}

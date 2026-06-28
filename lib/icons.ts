@@ -36,6 +36,11 @@ import {
   MapPin,
   ShieldAlert,
   Copy,
+  LifeBuoy,
+  Key,
+  ExternalLink,
+  BarChart3,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -82,6 +87,11 @@ export const ICONS = {
   "map-pin": MapPin,
   "shield-alert": ShieldAlert,
   copy: Copy,
+  "life-buoy": LifeBuoy,
+  key: Key,
+  "external-link": ExternalLink,
+  "bar-chart-3": BarChart3,
+  users: Users,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
