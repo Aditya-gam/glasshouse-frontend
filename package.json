@@ -14,10 +14,14 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "spec:pull": "curl -fsS \"${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}/openapi.json\" -o openapi/openapi.json",
+    "api:generate": "openapi-ts",
+    "api:check": "openapi-ts && git diff --exit-code -- lib/api",
     "prepare": "husky"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@hey-api/client-fetch": "^0.13.1",
     "@opentelemetry/api": "^1.9.1",
     "@radix-ui/colors": "^3.0.0",
     "@vercel/otel": "^2.1.3",
@@ -35,6 +39,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.99.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

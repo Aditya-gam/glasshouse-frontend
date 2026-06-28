@@ -6,6 +6,11 @@ coverage/
 next-env.d.ts
 public/mockServiceWorker.js
 
+# Generated OpenAPI client + vendored spec — machine output; must stay byte-identical
+# to the generator/backend so the CI drift-guard (pnpm api:check) is stable.
+lib/api/
+openapi/
+
 # Authored prose / agent rules — leave formatting as written
 .claude/
 CLAUDE.md

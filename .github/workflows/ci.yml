@@ -29,6 +29,10 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Drift-guard: regenerate the client from the vendored spec; fail if it differs from
+      # what's committed (catches a stale client or an un-regenerated spec bump).
+      - name: API client drift-guard
+        run: pnpm api:check
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format:check

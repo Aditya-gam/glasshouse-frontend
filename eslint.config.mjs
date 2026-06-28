@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "public/mockServiceWorker.js",
+    // Generated OpenAPI client (machine output — see openapi-ts.config.ts).
+    "lib/api/**",
   ]),
 ]);
 
