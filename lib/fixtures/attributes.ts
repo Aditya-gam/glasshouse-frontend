@@ -1,0 +1,111 @@
+import type { AttrItem } from "@/lib/schemas/attribute";
+
+/**
+ * Seed subject: "Marta Rocha", an at-risk investigative journalist in Lisbon — one
+ * coherent profile so the persona lens is meaningful (HANDOFF seed). Reliability is
+ * CALIBRATED (point estimate + interval), never raw model confidence. Income abstains
+ * — a first-class "no signal" state. Severity per persona is from the taxonomy.
+ *
+ * Lifted verbatim from the prototype's `dashboard-data.jsx` (window.IEA.ATTRS); these
+ * become the API contract (06-api `AttributeRead`). MSW serves them until M5.4.
+ */
+export const ATTRIBUTES: AttrItem[] = [
+  {
+    code: "location",
+    label: "Current location",
+    value: "Lisbon, Portugal",
+    detail: "city-level",
+    reliability: 86,
+    lo: 81,
+    hi: 90,
+    evidence: "6 posts pin this",
+    evidenceCount: 6,
+    sev: { atrisk: "extreme", jobseeker: "moderate" },
+  },
+  {
+    code: "occupation",
+    label: "Occupation",
+    value: "Investigative journalist",
+    detail: null,
+    reliability: 91,
+    lo: 87,
+    hi: 94,
+    evidence: "9 posts point here",
+    evidenceCount: 9,
+    sev: { atrisk: "moderate", jobseeker: "high" },
+  },
+  {
+    code: "sex",
+    label: "Sex",
+    value: "Female",
+    detail: null,
+    reliability: 82,
+    lo: 75,
+    hi: 88,
+    evidence: "across 12 posts",
+    evidenceCount: 12,
+    sensitive: true,
+    sev: { atrisk: "low", jobseeker: "low" },
+  },
+  {
+    code: "age",
+    label: "Age",
+    value: "35–39",
+    detail: "estimated range",
+    reliability: 78,
+    lo: 71,
+    hi: 84,
+    evidence: "7 posts narrow this",
+    evidenceCount: 7,
+    sev: { atrisk: "low", jobseeker: "low" },
+  },
+  {
+    code: "relationship",
+    label: "Relationship status",
+    value: "Married",
+    detail: null,
+    reliability: 73,
+    lo: 66,
+    hi: 79,
+    evidence: "4 posts suggest this",
+    evidenceCount: 4,
+    sensitive: true,
+    sev: { atrisk: "moderate", jobseeker: "low" },
+  },
+  {
+    code: "education",
+    label: "Education",
+    value: "Master's degree",
+    detail: null,
+    reliability: 70,
+    lo: 62,
+    hi: 77,
+    evidence: "5 posts imply this",
+    evidenceCount: 5,
+    sev: { atrisk: "low", jobseeker: "moderate" },
+  },
+  {
+    code: "birthplace",
+    label: "Place of birth",
+    value: "Porto, Portugal",
+    detail: "city-level",
+    reliability: 64,
+    lo: 55,
+    hi: 72,
+    evidence: "3 posts hint at this",
+    evidenceCount: 3,
+    art9: true,
+    sensitive: true,
+    sev: { atrisk: "moderate", jobseeker: "low" },
+  },
+  {
+    code: "income",
+    label: "Income",
+    value: null,
+    detail: null,
+    abstain: true,
+    sensitive: true,
+    evidence: "no posts gave a usable signal",
+    sev: { atrisk: "low", jobseeker: "low" },
+  },
+];
