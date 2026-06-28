@@ -1,0 +1,373 @@
+/* Shared honest-state primitives — EmptyState, ErrorState, RunProgress, Skeletons.
+ * Calm by construction: never alarmist; ErrorState is NOT a red alert; reduced-motion
+ * safe. Ported from the prototype's states.css onto the M5.3 tokens. */
+
+/* ---- Centered states (empty / error) ---- */
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 28px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.state-ic {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+}
+.state-ic--error {
+  background: var(--secondary);
+  color: var(--subtle-foreground);
+}
+.state-title {
+  margin: 0;
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+.state-msg {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+.state-msg2 {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--subtle-foreground);
+}
+.state-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.state-details {
+  margin-top: 16px;
+  width: 100%;
+  text-align: left;
+}
+.state-details summary {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+}
+.state-details summary::-webkit-details-marker {
+  display: none;
+}
+.state-details summary:hover {
+  color: var(--foreground);
+}
+.state-details summary:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.state-details summary .chev {
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+.state-details[open] summary .chev {
+  transform: rotate(90deg);
+}
+.state-detail-body {
+  margin-top: 8px;
+  font: 400 12px/1.5 var(--font-mono);
+  color: var(--subtle-foreground);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 11px 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---- RunProgress ---- */
+.runprog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-xs);
+  padding: 18px 20px;
+}
+.runprog-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.runprog-title {
+  font-size: 14.5px;
+  font-weight: 500;
+}
+.runprog-conn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.runprog-conn-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  flex: none;
+}
+.runprog-conn[data-status="polling"] {
+  color: var(--warning-foreground);
+}
+.runprog-conn[data-status="polling"] .runprog-conn-dot {
+  background: var(--warning);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .runprog-conn[data-status="running"] .runprog-conn-dot {
+    animation: rp-pulse 1.4s var(--ease-standard) infinite;
+  }
+}
+@keyframes rp-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 50%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 0%, transparent);
+  }
+}
+.runprog-cancel {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 12.5px;
+  padding: 5px 11px;
+  border-radius: var(--radius-md);
+  flex: none;
+}
+.runprog-cancel:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+.runprog-cancel:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.runprog-stages {
+  margin-top: 18px;
+  display: flex;
+  align-items: flex-start;
+}
+.rp-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  width: 92px;
+  text-align: center;
+}
+.rp-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--muted-foreground);
+  font: 500 12px var(--font-mono);
+}
+.rp-stage[data-state="done"] .rp-dot {
+  background: var(--accent);
+  border-color: var(--accent-border);
+  color: var(--accent-text);
+}
+.rp-stage[data-state="active"] .rp-dot {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+.rp-label {
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--muted-foreground);
+}
+.rp-stage[data-state="active"] .rp-label {
+  color: var(--foreground);
+  font-weight: 500;
+}
+.rp-conn {
+  flex: 1;
+  height: 1.5px;
+  background: var(--border);
+  margin-top: 13.5px;
+  min-width: 14px;
+}
+.rp-conn[data-done="true"] {
+  background: var(--accent-border);
+}
+.rp-spin {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--primary-foreground) 35%, transparent);
+  border-top-color: var(--primary-foreground);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rp-spin {
+    animation: rp-spin 0.7s linear infinite;
+  }
+}
+@keyframes rp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.runprog-bar {
+  margin-top: 18px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--sand-4);
+  overflow: hidden;
+}
+.runprog-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+.runprog-hint {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--subtle-foreground);
+}
+
+/* ---- Skeleton compositions ---- */
+.skel-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: 18px;
+}
+.skel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.skel-foot {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.skel-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+}
+.skel-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.skel-chart {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: 20px;
+}
+.skel-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 120px;
+  margin-top: 18px;
+}
+.skel-bars > * {
+  flex: 1;
+  align-self: flex-end;
+}
+
+/* skeleton element sizes (kept in CSS so the compositions stay token-clean) */
+.skc-label {
+  width: 42%;
+  height: 13px;
+}
+.skc-chip {
+  width: 64px;
+  height: 20px;
+  border-radius: var(--radius-full);
+}
+.skc-value {
+  width: 72%;
+  height: 22px;
+  margin-top: 12px;
+}
+.skc-bar {
+  width: 100%;
+  height: 8px;
+  margin-top: 18px;
+  border-radius: var(--radius-full);
+}
+.skc-range {
+  width: 38%;
+  height: 11px;
+  margin-top: 9px;
+}
+.skc-foot-l {
+  width: 40%;
+  height: 12px;
+}
+.skc-foot-btn {
+  width: 74px;
+  height: 30px;
+  border-radius: var(--radius-md);
+}
+.skr-av {
+  width: 36px;
+  height: 36px;
+}
+.skr-l1 {
+  width: 46%;
+  height: 13px;
+}
+.skr-l2 {
+  width: 80%;
+  height: 11px;
+}
+.skr-tag {
+  width: 64px;
+  height: 24px;
+  border-radius: var(--radius-full);
+}
+.skch-title {
+  width: 38%;
+  height: 14px;
+}
+.skch-bar {
+  border-radius: 6px 6px 0 0;
+}
