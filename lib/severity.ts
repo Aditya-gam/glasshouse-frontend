@@ -22,12 +22,20 @@ function maxLevel(a: SeverityLevel, b: SeverityLevel): SeverityLevel {
   return SEV_RANK[a] >= SEV_RANK[b] ? a : b;
 }
 
-/** Lens-relative severity. Balanced = safety-aware max across personas (persona-lens.md). */
+/** Lens-relative severity for a per-persona pair. Balanced = safety-aware max. */
+export function lensSeverity(
+  sev: { atrisk: SeverityLevel; jobseeker: SeverityLevel },
+  lens: Lens,
+): SeverityLevel {
+  if (lens === "balanced") return maxLevel(sev.atrisk, sev.jobseeker);
+  if (lens === "atrisk") return sev.atrisk;
+  return sev.jobseeker;
+}
+
+/** Lens-relative severity for an attribute (abstain wins). */
 export function severityFor(attr: AttrItem, lens: Lens): DisplaySeverity {
   if (attr.abstain) return "abstain";
-  if (lens === "balanced") return maxLevel(attr.sev.atrisk, attr.sev.jobseeker);
-  if (lens === "atrisk") return attr.sev.atrisk;
-  return attr.sev.jobseeker;
+  return lensSeverity(attr.sev, lens);
 }
 
 /** Order by lens severity desc, then calibrated reliability desc; abstain sinks last. */

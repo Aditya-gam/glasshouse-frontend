@@ -1,0 +1,225 @@
+/* Attribute card + severity chip + calibrated reliability bar.
+ * Severity = heatmap accent (chip + icon + text label, colorblind-safe).
+ * Reliability = teal, shown as a calibrated point + interval band (never raw confidence). */
+
+.attr-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.attr-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.attr-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.attr-value {
+  margin-top: 9px;
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.22;
+  color: var(--foreground);
+}
+.attr-detail {
+  font-size: 12px;
+  color: var(--subtle-foreground);
+  font-weight: 400;
+  margin-left: 6px;
+}
+.tag-art9 {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  vertical-align: middle;
+  font: 500 10.5px var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--info-foreground);
+  background: var(--info-soft);
+  border: 1px solid color-mix(in srgb, var(--info) 24%, transparent);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* reliability */
+.rel {
+  margin-top: 16px;
+}
+.rel-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.rel-label {
+  font-size: 12px;
+  color: var(--subtle-foreground);
+  white-space: nowrap;
+}
+.rel-pct {
+  font: 500 14px var(--font-mono);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+.relbar {
+  position: relative;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--sand-4);
+  overflow: hidden;
+}
+.relbar-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+.relbar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--primary);
+  border-radius: var(--radius-full);
+}
+.rel-range {
+  margin-top: 7px;
+  font-size: 11.5px;
+  color: var(--subtle-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* footer */
+.attr-foot {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.attr-evidence {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  min-width: 0;
+}
+.attr-evidence svg {
+  color: var(--subtle-foreground);
+  flex: none;
+}
+.attr-evidence span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attr-evidence--link {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+.attr-evidence--link:hover,
+.attr-evidence--link:hover svg {
+  color: var(--accent-text);
+}
+.attr-evidence--link:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.fix-btn {
+  flex: none;
+}
+
+/* abstained card */
+.attr-card--abstain {
+  border-style: dashed;
+}
+.attr-card--abstain .attr-value {
+  color: var(--subtle-foreground);
+}
+.abstain-note {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  flex: 1;
+}
+.abstain-foot {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.abstain-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--subtle-foreground);
+}
+.abstain-tag svg {
+  flex: none;
+}
+
+/* clickable card (whole-card open) */
+.attr-card--clickable {
+  cursor: pointer;
+}
+.attr-card--clickable:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* ---- Severity chip ---- */
+.sev {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 7px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  flex: none;
+}
+.sev svg {
+  flex: none;
+}
+.sev--low {
+  background: var(--sev-low-bg);
+  color: var(--sev-low-text);
+}
+.sev--moderate {
+  background: var(--sev-mod-bg);
+  color: var(--sev-mod-text);
+}
+.sev--high {
+  background: var(--sev-high-bg);
+  color: var(--sev-high-text);
+}
+.sev--extreme {
+  background: var(--sev-ext-bg);
+  color: var(--sev-ext-text);
+}
+.sev--abstain {
+  background: var(--secondary);
+  color: var(--muted-foreground);
+}

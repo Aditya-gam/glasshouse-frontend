@@ -32,6 +32,10 @@ import {
   Info,
   X,
   Plus,
+  FileText,
+  MapPin,
+  ShieldAlert,
+  Copy,
   type LucideIcon,
 } from "lucide-react";
 
@@ -74,6 +78,10 @@ export const ICONS = {
   info: Info,
   x: X,
   plus: Plus,
+  "file-text": FileText,
+  "map-pin": MapPin,
+  "shield-alert": ShieldAlert,
+  copy: Copy,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

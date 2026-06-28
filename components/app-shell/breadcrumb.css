@@ -1,0 +1,31 @@
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  color: var(--muted-foreground);
+  min-width: 0;
+}
+.crumbs a {
+  color: var(--muted-foreground);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.crumbs a:hover {
+  color: var(--foreground);
+}
+.crumbs a:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.crumbs svg {
+  color: var(--subtle-foreground);
+  flex: none;
+}
+.crumbs .crumb-here {
+  color: var(--foreground);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

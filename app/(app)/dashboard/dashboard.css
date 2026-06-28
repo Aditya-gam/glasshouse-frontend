@@ -1,0 +1,233 @@
+/* Dashboard — the reveal. Calm, data-forward. Reliability is teal; severity is the
+ * heatmap, used as chip accents only (never a flood). Ported onto the M5.3 tokens. */
+
+.content {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.page-title {
+  margin: 0;
+  font-weight: 500;
+  font-size: 28px;
+  letter-spacing: -0.01em;
+}
+.page-sub {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  max-width: 64ch;
+  text-wrap: pretty;
+}
+
+/* calibration explainer chip (right of title) */
+.calib {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  white-space: nowrap;
+}
+.calib-dot {
+  width: 8px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--primary);
+  flex: none;
+}
+.calib .info-btn {
+  display: inline-flex;
+  color: var(--subtle-foreground);
+  background: none;
+  border: none;
+  cursor: help;
+  padding: 0;
+}
+.calib .info-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+
+.page-meta {
+  margin: 14px 0 2px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--subtle-foreground);
+}
+.page-meta b {
+  color: var(--muted-foreground);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.meta-mid {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+/* ---- Safety resources banner (calm, info tone — never red) ---- */
+.safety {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--info-soft);
+  border: 1px solid color-mix(in srgb, var(--info) 26%, transparent);
+  color: var(--info-foreground);
+}
+.safety-ic {
+  flex: none;
+  color: var(--info);
+}
+.safety-txt {
+  font-size: 13.5px;
+  line-height: 1.45;
+  min-width: 0;
+}
+.safety-txt b {
+  font-weight: 500;
+}
+.safety-txt button.safety-link {
+  color: var(--info-foreground);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+.safety-txt button.safety-link:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+.safety-x {
+  margin-left: auto;
+  flex: none;
+  background: none;
+  border: none;
+  color: var(--info-foreground);
+  opacity: 0.7;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  display: inline-flex;
+}
+.safety-x:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--info) 14%, transparent);
+}
+.safety-x:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* ---- Attribute grid ---- */
+.grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  gap: 16px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .grid .attr-card {
+    animation: cardIn var(--duration-slow) var(--ease-out) both;
+  }
+  .grid .attr-card:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .grid .attr-card:nth-child(2) {
+    animation-delay: 45ms;
+  }
+  .grid .attr-card:nth-child(3) {
+    animation-delay: 90ms;
+  }
+  .grid .attr-card:nth-child(4) {
+    animation-delay: 135ms;
+  }
+  .grid .attr-card:nth-child(5) {
+    animation-delay: 180ms;
+  }
+  .grid .attr-card:nth-child(6) {
+    animation-delay: 225ms;
+  }
+  .grid .attr-card:nth-child(7) {
+    animation-delay: 270ms;
+  }
+  .grid .attr-card:nth-child(8) {
+    animation-delay: 315ms;
+  }
+}
+@keyframes cardIn {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* abstained-everywhere calm note (framed as good news, honestly) */
+.all-abstain-note {
+  margin-top: 18px;
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  padding: 15px 17px;
+  border-radius: var(--radius-lg);
+  background: var(--accent);
+  border: 1px solid var(--accent-border);
+}
+.all-abstain-note .aan-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent-text);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.all-abstain-note .aan-body {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--accent-foreground);
+}
+.all-abstain-note .aan-body b {
+  font-weight: 600;
+}
+
+.run-progress-wrap {
+  margin-top: 18px;
+}
+
+@media (max-width: 760px) {
+  .content {
+    padding: 22px 16px 48px;
+  }
+  .page-title {
+    font-size: 24px;
+  }
+}
