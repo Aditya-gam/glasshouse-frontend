@@ -1,6 +1,6 @@
 # Glasshouse — Frontend
 
-[![live demo](https://img.shields.io/badge/live-glasshouse--frontend.vercel.app-000000?logo=vercel&logoColor=white)](https://glasshouse-frontend.vercel.app/) ![CI](https://img.shields.io/github/actions/workflow/status/Aditya-gam/glasshouse-frontend/ci.yml?label=CI) ![Next.js](https://img.shields.io/badge/Next.js-16-000000) ![license](https://img.shields.io/badge/license-MIT-blue)
+[![live demo](https://img.shields.io/badge/live-glasshouse--frontend.vercel.app-000000?logo=vercel&logoColor=white)](https://glasshouse-frontend.vercel.app/) [![CI](https://github.com/Aditya-gam/glasshouse-frontend/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Aditya-gam/glasshouse-frontend/actions/workflows/ci.yml) ![Next.js](https://img.shields.io/badge/Next.js-16-000000) ![license](https://img.shields.io/badge/license-MIT-blue)
 
 Next.js frontend for **Glasshouse** (privacy self-audit: **Attack → Measure → Defend**). Part of the
 [glasshouse](https://github.com/Aditya-gam/glasshouse) project — the spec (`docs/`) and the UI prototype
