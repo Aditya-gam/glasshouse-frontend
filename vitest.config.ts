@@ -32,6 +32,7 @@ export default defineConfig({
         // Not unit-testable (async RSC / route handlers / server-only) — covered by E2E.
         "**/page.tsx",
         "app/**/layout.tsx",
+        "app/global-error.tsx", // renders its own <html>/<body> — covered by Playwright, not jsdom
         "app/api/**",
         "lib/dal/**",
         "lib/data/**",
