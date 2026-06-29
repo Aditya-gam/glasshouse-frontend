@@ -38,6 +38,9 @@ jobs:
       - run: pnpm format:check
       - run: pnpm test:run
       - run: pnpm build
+      # Bundle-size budget (gzipped client JS) — reuses the build above; fails on a regression
+      # past the headroom in .size-limit.json (bump the budget there when growth is justified).
+      - run: pnpm size
 
   audit:
     name: Dependency audit

@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "analyze": "ANALYZE=true next build",
+    "size": "size-limit",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -48,7 +50,9 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@hey-api/openapi-ts": "^0.99.0",
+    "@next/bundle-analyzer": "^16.2.9",
     "@playwright/test": "^1.61.1",
+    "@size-limit/file": "^12.1.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -67,6 +71,7 @@
     "lint-staged": "^17.0.8",
     "msw": "^2.14.6",
     "prettier": "^3.9.1",
+    "size-limit": "^12.1.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",
