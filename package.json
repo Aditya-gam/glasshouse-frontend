@@ -70,7 +70,7 @@
     "jsdom": "^29.1.1",
     "lint-staged": "^17.0.8",
     "msw": "^2.14.6",
-    "prettier": "^3.9.1",
+    "prettier": "^3.9.3",
     "size-limit": "^12.1.0",
     "tailwindcss": "^4",
     "typescript": "^5",
