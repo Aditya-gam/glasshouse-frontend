@@ -27,6 +27,17 @@ describe("PersonaLens", () => {
     expect(onChange).toHaveBeenCalledWith("atrisk");
   });
 
+  it("navigates lenses with arrow keys (roving tabindex)", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<PersonaLens value="balanced" onChange={onChange} />);
+    await user.click(screen.getByRole("radio", { name: "Balanced" }));
+    await user.keyboard("{ArrowRight}");
+    expect(onChange).toHaveBeenCalledWith("jobseeker");
+    await user.keyboard("{ArrowLeft}");
+    expect(onChange).toHaveBeenCalledWith("balanced");
+  });
+
   it("has no a11y violations", async () => {
     const { container } = render(<PersonaLens value="balanced" onChange={() => {}} />);
     expect((await axe(container)).violations).toEqual([]);
