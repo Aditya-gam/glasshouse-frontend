@@ -37,10 +37,10 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # Install always (cheap, and populates the pnpm cache); only the browser + run are gated.
+      - run: pnpm install --frozen-lockfile
       - if: ${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY == '' }}
         run: echo "::notice::Clerk keys not set — skipping E2E. Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY repo secrets to enable."
-      - if: ${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '' }}
-        run: pnpm install --frozen-lockfile
       - name: Install Playwright Chromium
         if: ${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '' }}
         run: pnpm exec playwright install --with-deps chromium

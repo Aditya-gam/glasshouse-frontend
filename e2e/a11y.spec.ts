@@ -32,8 +32,10 @@ async function scan(page: import("@playwright/test").Page, route: string) {
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
   if (results.violations.length) {
+    // Literal first arg (route passed separately) — concise failure diagnostics.
     console.log(
-      `a11y violations on ${route}:`,
+      "a11y violations:",
+      route,
       JSON.stringify(results.violations.map((v) => ({ id: v.id, target: v.nodes[0]?.target }))),
     );
   }
