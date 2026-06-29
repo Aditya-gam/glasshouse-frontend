@@ -9,6 +9,51 @@ live in the hub repo.
 **Stack:** Next.js 16 (App Router) · TypeScript strict · pnpm · Tailwind v4 · shadcn/ui · Lucide ·
 TanStack Query · generated OpenAPI client (`@hey-api/openapi-ts`) + Zod at the boundary · OpenTelemetry.
 
+## How it works
+
+Glasshouse shows you your privacy exposure the way an adversary would — then helps you close it.
+Every recommendation is **advise-only**: it never posts or changes anything on your behalf.
+
+```mermaid
+flowchart LR
+  subgraph Glasshouse
+    direction LR
+    A["Attack<br/>an LLM infers private<br/>attributes from your content"] --> M["Measure<br/>calibrated reliability +<br/>per-persona severity"] --> D["Defend<br/>rewrite · generalize · remove,<br/>then re-attack to prove it holds"]
+  end
+  C["Your public content<br/>posts · bios · profiles"] --> A
+  D -.->|"advise-only — you decide"| You["You act"]
+```
+
+## Architecture
+
+The trust boundary is simple: **everything sensitive stays server-side.** Client Components hold
+no secrets; the server-only Data Access Layer is the one place that authorizes requests, talks to
+the backend, and returns minimal DTOs. See the [ADRs](docs/adr/) for the reasoning.
+
+```mermaid
+flowchart TB
+  Browser["Browser — Client Components<br/>(no secrets · nonce-tagged scripts)"]
+  subgraph Vercel["Next.js on Vercel"]
+    Proxy["proxy.ts — Clerk session context<br/>+ strict CSP nonce (NOT the auth gate)"]
+    RSC["Server Components"]
+    DAL["Data Access Layer (server-only)<br/>authorize · Zod-parse · minimal DTOs"]
+    RH["Route Handler<br/>SSE proxy /api/runs/:id/events"]
+  end
+  Clerk[("Clerk<br/>auth")]
+  subgraph Backend["Backend — FastAPI (separate repo)"]
+    API["/v1 API<br/>JWT verify · RBAC · ownership"]
+    Engine["AI engine<br/>attack · measure · defend"]
+  end
+  Browser -.->|"every request: CSP nonce + session"| Proxy
+  Browser -->|"TanStack Query"| RH
+  Browser --> RSC
+  RSC --> DAL
+  RH --> DAL
+  DAL -->|"Bearer JWT"| API
+  Browser -->|"sign-in"| Clerk
+  API --> Engine
+```
+
 ## Prerequisites
 
 - **Node 20** — `nvm use` reads [`.nvmrc`](.nvmrc).
@@ -35,12 +80,43 @@ on fixtures without a backend, so a running API is only needed to exercise the l
 | `pnpm typecheck`               | `tsc --noEmit` (strict).                            |
 | `pnpm lint`                    | ESLint (flat config, `eslint-config-next`).         |
 | `pnpm test` / `test:run`       | Vitest + RTL + MSW (watch / once).                  |
+| `pnpm test:coverage`           | Vitest with coverage (lcov → SonarCloud).           |
+| `pnpm test:e2e`                | Playwright E2E — a11y, journeys, keyboard, CSP.     |
 | `pnpm format` / `format:check` | Prettier write / check.                             |
 | `pnpm spec:pull`               | Refresh the vendored OpenAPI spec from the backend. |
 | `pnpm api:generate`            | Regenerate the typed client (`@hey-api`).           |
+| `pnpm analyze`                 | Bundle treemap (`@next/bundle-analyzer`).           |
+| `pnpm size`                    | Bundle-size budget (size-limit).                    |
 
-A husky `pre-commit` hook runs `lint-staged` (ESLint `--fix` + Prettier on staged files); `tsc`, the
-full lint, Prettier, the client drift-guard, the Vitest suite, the build, and Semgrep run in CI.
+A husky `pre-commit` hook runs `lint-staged` (ESLint `--fix` + Prettier on staged files). CI runs
+the full gate set — see [Testing](#testing) below.
+
+## Security & privacy
+
+This is a privacy product, so the security posture is part of the product:
+
+- **Auth boundary in the DAL, not middleware** — `proxy.ts` is callback-free (Clerk session
+  context only); authorization is enforced in `lib/dal/*` and re-verified by the backend, which
+  survives the 2025 `x-middleware-subrequest` bypass CVE. ([ADR 0001](docs/adr/0001-auth-in-dal-not-middleware.md))
+- **Strict nonce CSP** — `script-src` is nonce + `strict-dynamic` (no effective `unsafe-inline`),
+  enforced in production, alongside HSTS, `X-Frame-Options: DENY`, `Referrer-Policy`,
+  `Permissions-Policy`, and `Cross-Origin-Opener-Policy`. ([ADR 0002](docs/adr/0002-clerk-managed-strict-csp.md))
+- **No secrets client-side** — only `NEXT_PUBLIC_*` reach the browser; everything sensitive stays
+  in the server-only DAL. Supply chain: Dependabot + a blocking `pnpm audit` gate.
+- **HONEST-UI invariants** — calibrated reliability (never raw confidence), no-false-safety on
+  Defend, decoy off-by-default → opt-in → per-use confirm, advise-only CTAs, a persona lens that
+  reorders-never-hides, WCAG AA + full keyboard operability (incl. a skip link).
+
+## Testing
+
+A testing-trophy shape — static types plus a thick integration layer:
+
+- **Unit / integration** — Vitest + React Testing Library + MSW (components, the DAL, route handlers).
+- **Property-based** — fast-check over the severity / ordering domain invariants.
+- **E2E (Playwright)** — real-browser WCAG-AA axe sweep (light + dark), critical-path journeys,
+  **keyboard-only** operability, and a **CSP-violation** guard.
+- **CI gates** — `tsc` + ESLint + Prettier · OpenAPI client drift-guard · bundle-size budget
+  (size-limit) · `pnpm audit` · Semgrep · CodeQL · SonarCloud (quality + coverage) · the Playwright suite.
 
 ## Deploy (Vercel)
 
@@ -76,12 +152,17 @@ production. The repo is **zero-config**: Vercel auto-detects Next.js, reads Node
 app/            App Router — routes + route-local _components/; app/api/ (server-side SSE proxy)
 components/     Shared — ui/ (shadcn primitives) + app-shell, attribute, providers
 lib/            dal/ (server-only data access) · api/ (generated client + Zod) · mocks/ (MSW) · fixtures/
-proxy.ts        Clerk session-context middleware (NOT the auth boundary — enforcement is in the DAL)
-*.test.ts(x)    Vitest + RTL + MSW, colocated next to source (Playwright E2E pending a deployed backend)
+e2e/            Playwright — a11y sweep · journeys · keyboard · CSP guard
+docs/adr/       Architecture Decision Records (MADR)
+proxy.ts        Clerk session context + strict CSP nonce (NOT the auth boundary — enforcement is in the DAL)
+next.config.ts  Static security headers + bundle analyzer
+*.test.ts(x)    Vitest + RTL + MSW, colocated next to source
 instrumentation.ts   OpenTelemetry registration
 ```
 
-> **Status:** Frontend complete through **M5.6** — all 7 screens, Clerk auth + server-only DAL +
-> generated client + live-data wiring (the `runs` path) + the Vitest/RTL/MSW suite, on `main`.
+> **Status:** Frontend feature-complete on fixtures and hardened — all 7 screens, Clerk auth +
+> server-only DAL + generated client + live-data wiring (the `runs` path), comprehensive tests
+> (Vitest/RTL/MSW + Playwright a11y/keyboard/CSP + property-based), an enforced strict CSP +
+> security headers, supply-chain + bundle-size gates, and Vercel CI/CD — all on `main`.
 > Per-endpoint live screen-swaps land as the backend ships `/v1/inferences`, `/v1/eval/*`,
 > `/v1/remediations`. Build order is tracked in the hub's `docs/11-roadmap/tasks-frontend.md`.
