@@ -24,16 +24,26 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "lcov"],
       reportsDirectory: "./coverage",
+      // `include` makes v8 report ALL matching source files (untested → 0%), matching how
+      // SonarCloud measures coverage (rather than only files imported by a test).
+      include: ["app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}"],
       exclude: [
         ...coverageConfigDefaults.exclude,
+        // Not unit-testable (async RSC / route handlers / server-only) — covered by E2E.
+        "**/page.tsx",
+        "app/**/layout.tsx",
+        "app/api/**",
+        "lib/dal/**",
+        "lib/data/**",
+        "instrumentation.ts",
+        "proxy.ts",
+        // Generated + vendored + test infra.
         "lib/api/**",
+        "components/ui/**",
         "lib/mocks/**",
         "lib/fixtures/**",
         "test/**",
         "**/*.config.*",
-        "instrumentation.ts",
-        "proxy.ts",
-        "app/**/layout.tsx",
       ],
     },
   },
