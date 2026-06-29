@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 
 import { RouteFocus } from "@/components/app-shell/route-focus";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -25,11 +26,15 @@ export const metadata: Metadata = {
     "Glasshouse — privacy self-audit. See your exposure the way an adversary would: attack, measure, defend.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Strict-CSP nonce (set per-request by Clerk in proxy.ts) — forwarded to next-themes so its
+  // pre-paint anti-flash inline script carries the nonce instead of being blocked. Next nonces
+  // its own scripts automatically; this is the one inline script we inject ourselves.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     // `dynamic` lets ClerkProvider read the per-request CSP nonce (strict CSP, set in proxy.ts);
     // it forces dynamic rendering app-wide — required for nonce-based CSP.
@@ -41,6 +46,7 @@ export default function RootLayout({
       >
         <body className="flex min-h-full flex-col">
           <ThemeProvider
+            nonce={nonce}
             attribute="class"
             defaultTheme="system"
             enableSystem

@@ -15,11 +15,13 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
  * backend still fail closed (no token ⇒ no data). `proxy.ts` is also Next.js's recommended
  * place to set a per-request nonce.
  *
- * CSP rollout (frontend.md "nonce-based CSP, no unsafe-inline"): `reportOnly: true` is phase 1
- * — it emits `Content-Security-Policy-Report-Only`, surfacing violations in the browser console
- * without blocking. Flip to enforcing (drop `reportOnly`) once the preview is clean. `strict`
- * ⇒ nonce + `strict-dynamic`; it requires `<ClerkProvider dynamic>` (app/layout.tsx), which
- * forces dynamic rendering app-wide. Clerk generates the nonce and forwards it via `x-nonce`.
+ * Enforcing nonce-based CSP (frontend.md "nonce-based CSP, no unsafe-inline"). `strict` ⇒
+ * `script-src` = per-request nonce + `strict-dynamic` (the `'unsafe-inline'`/host fallbacks
+ * Clerk also emits are ignored by strict-dynamic-aware browsers; `'unsafe-eval'` is added in
+ * dev only and stripped in production). It requires `<ClerkProvider dynamic>` (app/layout.tsx)
+ * so the nonce reaches the scripts — which forces dynamic rendering app-wide. Clerk generates
+ * the nonce and forwards it via `x-nonce`. Rolled out report-only first (#32), then enforced
+ * once `e2e/csp.spec.ts` confirmed zero real-browser violations.
  *
  * All enforcement lives downstream and fails closed:
  *   - the DAL (`lib/dal/*`) attaches the caller's token; no token ⇒ no privileged data,
@@ -28,7 +30,6 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 export default clerkMiddleware({
   contentSecurityPolicy: {
     strict: true,
-    reportOnly: true,
   },
 });
 
