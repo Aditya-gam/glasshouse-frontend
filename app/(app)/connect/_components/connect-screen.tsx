@@ -90,7 +90,7 @@ export function ConnectScreen() {
   return (
     <div>
       <Topbar showLens={false} center={<SetupSteps active="connect" />} />
-      <main className="connect-wrap">
+      <main id="main-content" tabIndex={-1} className="connect-wrap">
         <div className="connect-head">
           <h1 className="connect-title">Bring in your footprint</h1>
           <p className="connect-sub">

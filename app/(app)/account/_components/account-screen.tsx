@@ -97,7 +97,7 @@ export function AccountScreen() {
         }
       />
 
-      <main className="account-wrap">
+      <main id="main-content" tabIndex={-1} className="account-wrap">
         <Link className="acct-back" href="/dashboard">
           <Icon name="arrow-left" size={15} /> Back to dashboard
         </Link>

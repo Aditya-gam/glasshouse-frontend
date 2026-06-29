@@ -1,6 +1,10 @@
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center gap-4 px-6 py-24">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center gap-4 px-6 py-24"
+    >
       <p className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
         Glasshouse
       </p>

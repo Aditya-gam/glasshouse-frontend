@@ -27,7 +27,11 @@ export function ErrorState({
   children,
 }: Readonly<ErrorStateProps>) {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 py-24">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 py-24"
+    >
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-2 text-center">
           <div
