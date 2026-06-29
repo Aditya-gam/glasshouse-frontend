@@ -31,7 +31,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    // `dynamic` lets ClerkProvider read the per-request CSP nonce (strict CSP, set in proxy.ts);
+    // it forces dynamic rendering app-wide — required for nonce-based CSP.
+    <ClerkProvider dynamic>
       <html
         lang="en"
         suppressHydrationWarning
