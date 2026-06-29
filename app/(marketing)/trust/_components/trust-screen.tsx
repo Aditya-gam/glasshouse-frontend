@@ -39,7 +39,7 @@ export function TrustScreen({ initialState }: { initialState: TrustViewState }) 
         </div>
       </header>
 
-      <main className="trust-wrap">
+      <main id="main-content" tabIndex={-1} className="trust-wrap">
         <section className="trust-hero">
           <p className="eyebrow-trust">Accuracy &amp; trust</p>
           <h1 className="trust-h1">How do we know these numbers?</h1>

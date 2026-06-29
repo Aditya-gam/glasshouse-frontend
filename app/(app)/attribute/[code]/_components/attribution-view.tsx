@@ -71,7 +71,7 @@ export function AttributionView({
     <div>
       <Topbar center={crumbs} />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <h1 className="sr-only">{attrLabel} — why this inference</h1>
 
         {view === "loading" && <AttrSkeleton />}

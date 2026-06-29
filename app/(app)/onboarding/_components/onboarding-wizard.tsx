@@ -68,7 +68,7 @@ export function OnboardingWizard() {
 
   return (
     <div className="page">
-      <main className="wrap">
+      <main id="main-content" tabIndex={-1} className="wrap">
         <div className="ob-topbar">
           <div className="brand">
             <div className="brand-mark">

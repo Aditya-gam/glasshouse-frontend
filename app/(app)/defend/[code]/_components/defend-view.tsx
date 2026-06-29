@@ -87,7 +87,7 @@ export function DefendView({ initialState, target, options, decoyBackfire }: Def
   return (
     <div>
       <Topbar center={crumbs} />
-      <main className="defend-wrap">
+      <main id="main-content" tabIndex={-1} className="defend-wrap">
         <div className="defend-head">
           <h1 className="defend-title">Break this inference</h1>
           <p className="defend-sub">

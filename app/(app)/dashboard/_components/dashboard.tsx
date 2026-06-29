@@ -89,7 +89,7 @@ export function Dashboard({
   return (
     <div>
       <Topbar center={runStatus} />
-      <main className="content">
+      <main id="main-content" tabIndex={-1} className="content">
         {view === "empty" && (
           <EmptyState
             icon="inbox"
