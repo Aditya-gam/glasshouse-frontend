@@ -9,7 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
  * Route-segment error boundary — catches render errors in any route under app/. Calm,
  * advise-only UI; surfaces only the error `digest` for support, never the raw message.
  */
-export default function Error({
+export default function ErrorBoundary({
   error,
   reset,
 }: Readonly<{ error: Error & { digest?: string }; reset: () => void }>) {
