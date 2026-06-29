@@ -171,7 +171,9 @@
   /* teal-12 (not -11): text on the teal-3 accent surface needs WCAG AA (4.5:1). */
   --accent-foreground: var(--teal-12);
   --accent-border: var(--teal-7);
-  --accent-text: var(--teal-11);
+  /* teal-12 (not -11): accent text on the page surface needs WCAG AA 4.5:1 for small text
+     (teal-11 ≈ 4:1 — passes UI/large only). Caught by the real-browser axe sweep. */
+  --accent-text: var(--teal-12);
 
   --secondary: var(--sand-3);
   --secondary-hover: var(--sand-4);
@@ -191,6 +193,9 @@
   --destructive-soft: var(--tomato-3);
   --destructive-foreground: #ffffff;
   --destructive-text: var(--tomato-11);
+  /* Fixed deep tomato for SOLID destructive buttons — white text needs AA 4.5:1, and
+     tomato-9 + white is only ~3.9:1 (the step-9-solid issue, cf. --primary-strong). */
+  --destructive-strong: #b5341f;
   --info: var(--indigo-9);
   --info-soft: var(--indigo-3);
   --info-foreground: var(--indigo-11);

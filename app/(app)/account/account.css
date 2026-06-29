@@ -338,12 +338,12 @@
   background: color-mix(in srgb, var(--warning) 86%, #000);
 }
 .btn-danger {
-  background: var(--destructive);
+  background: var(--destructive-strong);
   color: var(--destructive-foreground);
   border-color: transparent;
 }
 .btn-danger:hover {
-  background: var(--destructive-hover);
+  background: color-mix(in srgb, var(--destructive-strong), #000 8%);
 }
 
 /* delete dialog */

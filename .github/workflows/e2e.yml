@@ -1,0 +1,55 @@
+name: E2E
+
+# Playwright critical-path journeys + a real-browser WCAG-AA sweep. Runs against a local dev
+# server. Skips cleanly until the Clerk runtime keys are set (the dev server renders
+# ClerkProvider). Per the testing spec, E2E is a top-of-pyramid gate on main + nightly.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * *" # nightly
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  # Clerk runtime keys. The publishable key is public; the secret is server-only. Set both as
+  # repo secrets to enable E2E in CI (same shared dev instance the backend verifies).
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+
+jobs:
+  e2e:
+    name: Playwright E2E + a11y
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: ${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY == '' }}
+        run: echo "::notice::Clerk keys not set — skipping E2E. Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY repo secrets to enable."
+      - if: ${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '' }}
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        if: ${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '' }}
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run Playwright (E2E + a11y)
+        if: ${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '' }}
+        run: pnpm test:e2e
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ failure() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
