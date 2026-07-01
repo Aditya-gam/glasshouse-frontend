@@ -21,10 +21,12 @@ concurrency:
 
 env:
   NEXT_TELEMETRY_DISABLED: "1"
-  # Clerk runtime keys. The publishable key is public; the secret is server-only. Set both as
-  # repo secrets to enable E2E in CI (same shared dev instance the backend verifies).
+  # The Clerk PUBLISHABLE key is public (a NEXT_PUBLIC_* value, pk_test_…), not a secret. It sits at
+  # workflow scope so the skip-gate `if:` below can read it (the `secrets` context isn't available in
+  # `if:` — this env indirection is the standard workaround). The real secret, CLERK_SECRET_KEY, is
+  # scoped to only the step that needs it (below), never exposed to the whole job.
+  # nosemgrep: yaml.github-actions.security.gha-workflow-env-secret.gha-workflow-env-secret
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
 
 jobs:
   e2e:
@@ -46,6 +48,9 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Run Playwright (E2E + a11y)
         if: ${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY != '' }}
+        env:
+          # Server-only secret, scoped to just this step (the dev server needs it at runtime).
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         run: pnpm test:e2e
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ failure() }}
