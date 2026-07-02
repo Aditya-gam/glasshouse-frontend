@@ -56,13 +56,13 @@ flowchart TB
 
 ## Prerequisites
 
-- **Node 20** — `nvm use` reads [`.nvmrc`](.nvmrc).
+- **Node 24** (Active LTS) — `nvm use` reads [`.nvmrc`](.nvmrc).
 - **pnpm** — `corepack enable` (the version is pinned via `packageManager` in `package.json`).
 
 ## Getting started
 
 ```bash
-nvm use            # Node 20
+nvm use            # Node 24
 corepack enable    # pnpm
 pnpm install
 pnpm dev           # http://localhost:3000
@@ -121,8 +121,8 @@ A testing-trophy shape — static types plus a thick integration layer:
 ## Deploy (Vercel)
 
 Deployed on **Vercel** via native Git integration — every PR gets a preview URL and `main` deploys to
-production. The repo is **zero-config**: Vercel auto-detects Next.js, reads Node 20 from
-[`.nvmrc`](.nvmrc) and pnpm from `packageManager`, so no `vercel.json` is needed.
+production. The repo is **zero-config**: Vercel auto-detects Next.js, picks Node 24 from
+`engines` in `package.json` and pnpm from `packageManager`, so no `vercel.json` is needed.
 
 **One-time setup (Vercel dashboard):**
 
