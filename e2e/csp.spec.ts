@@ -18,6 +18,7 @@ const ROUTES = [
   "/dashboard",
   "/attribute/location",
   "/defend/location",
+  "/docs", // Scalar API reference — third-party UI must run nonced under the same strict CSP
 ];
 
 const CSP_VIOLATION = /Content Security Policy|Refused to (load|execute|apply|connect|frame)/i;
