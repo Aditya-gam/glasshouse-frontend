@@ -71,6 +71,9 @@ pnpm dev           # http://localhost:3000
 Copy [`.env.example`](.env.example) to `.env.local` for Clerk auth + the backend URL. Screens render
 on fixtures without a backend, so a running API is only needed to exercise the live-data paths.
 
+An interactive **API reference** (Scalar) is served at [`/docs`](https://glasshouse-frontend.vercel.app/docs),
+rendered from the vendored [`openapi/openapi.json`](openapi/openapi.json) — no backend needed.
+
 ## Scripts
 
 | Script                         | Purpose                                             |
@@ -149,7 +152,7 @@ production. The repo is **zero-config**: Vercel auto-detects Next.js, picks Node
 ## Project structure
 
 ```
-app/            App Router — routes + route-local _components/; app/api/ (server-side SSE proxy)
+app/            App Router — routes + route-local _components/; app/api/ (server-side SSE proxy) · app/docs/ (Scalar API reference)
 components/     Shared — ui/ (shadcn primitives) + app-shell, attribute, providers
 lib/            dal/ (server-only data access) · api/ (generated client + Zod) · mocks/ (MSW) · fixtures/
 e2e/            Playwright — a11y sweep · journeys · keyboard · CSP guard
