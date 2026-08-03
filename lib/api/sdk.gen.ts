@@ -202,6 +202,8 @@ export const getImportV1ImportsImportIdGet = <ThrowOnError extends boolean = fal
 
 /**
  * List Inferences
+ *
+ * The user's attribute cards (RLS-scoped), optionally filtered to one run / profile.
  */
 export const listInferencesV1InferencesGet = <ThrowOnError extends boolean = false>(options?: Options<ListInferencesV1InferencesGetData, ThrowOnError>): RequestResult<ListInferencesV1InferencesGetResponses, ListInferencesV1InferencesGetErrors, ThrowOnError> => (options?.client ?? client).get<ListInferencesV1InferencesGetResponses, ListInferencesV1InferencesGetErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -212,7 +214,7 @@ export const listInferencesV1InferencesGet = <ThrowOnError extends boolean = fal
 /**
  * Get Inference
  *
- * Ranked candidates with calibrated reliability + the evidence join.
+ * Ranked candidates with calibrated reliability + the evidence join. Lands with M3.
  */
 export const getInferenceV1InferencesInferenceIdGet = <ThrowOnError extends boolean = false>(options: Options<GetInferenceV1InferencesInferenceIdGetData, ThrowOnError>): RequestResult<GetInferenceV1InferencesInferenceIdGetResponses, GetInferenceV1InferencesInferenceIdGetErrors, ThrowOnError> => (options.client ?? client).get<GetInferenceV1InferencesInferenceIdGetResponses, GetInferenceV1InferencesInferenceIdGetErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -250,6 +252,11 @@ export const createRemediationV1InferencesInferenceIdRemediationsPost = <ThrowOn
 
 /**
  * List Remediations
+ *
+ * The frontier(s) for `inference_id`, newest first; a `cant_break` result when none localized.
+ *
+ * Without `inference_id` the list is empty for now (a global cursor list lands with M5.2). RLS
+ * hides another user's inferences, so a foreign id yields an empty list (no IDOR signal).
  */
 export const listRemediationsV1RemediationsGet = <ThrowOnError extends boolean = false>(options?: Options<ListRemediationsV1RemediationsGetData, ThrowOnError>): RequestResult<ListRemediationsV1RemediationsGetResponses, ListRemediationsV1RemediationsGetErrors, ThrowOnError> => (options?.client ?? client).get<ListRemediationsV1RemediationsGetResponses, ListRemediationsV1RemediationsGetErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -260,7 +267,7 @@ export const listRemediationsV1RemediationsGet = <ThrowOnError extends boolean =
 /**
  * Get Remediation
  *
- * The proven before/after (intervals, value-recovery, significant) + frontier options.
+ * One remediation run's proven frontier (`remediation_id` = the run id). 404 if absent.
  */
 export const getRemediationV1RemediationsRemediationIdGet = <ThrowOnError extends boolean = false>(options: Options<GetRemediationV1RemediationsRemediationIdGetData, ThrowOnError>): RequestResult<GetRemediationV1RemediationsRemediationIdGetResponses, GetRemediationV1RemediationsRemediationIdGetErrors, ThrowOnError> => (options.client ?? client).get<GetRemediationV1RemediationsRemediationIdGetResponses, GetRemediationV1RemediationsRemediationIdGetErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -282,10 +289,11 @@ export const listRunsV1RunsGet = <ThrowOnError extends boolean = false>(options?
 /**
  * Create Run
  *
- * Create a run, execute it synchronously (M1.9 → queue), and return 202 + run_id.
+ * Create a run and enqueue it; return 202 + run_id (poll `GET /runs/{id}` or the SSE).
  *
- * A repeated `Idempotency-Key` returns the original run without re-running it (api-design rule).
- * Only `attack` is live for the tracer; `eval`/`remediation` arrive with M2/M3.
+ * **Consent-gated** (fail closed). `attack` infers all 8 attributes jointly (M1.7+); `remediation`
+ * (M3.7) proves an advise-only edit for one inference named in `params.inference_id`. A repeated
+ * `Idempotency-Key` returns the original run without re-enqueuing. `eval` arrives with its stage.
  */
 export const createRunV1RunsPost = <ThrowOnError extends boolean = false>(options: Options<CreateRunV1RunsPostData, ThrowOnError>): RequestResult<CreateRunV1RunsPostResponses, CreateRunV1RunsPostErrors, ThrowOnError> => (options.client ?? client).post<CreateRunV1RunsPostResponses, CreateRunV1RunsPostErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -325,7 +333,11 @@ export const runEventsV1RunsRunIdEventsGet = <ThrowOnError extends boolean = fal
 /**
  * Cancel Run
  *
- * Request cancellation — lands with the arq worker (M1.9).
+ * Request cancellation. A queued/running run is marked `canceled` (the worker won't start, or
+ * won't finish, a canceled run); a terminal run is unchanged. 404 if absent or RLS-hidden.
+ *
+ * The transition is status-guarded, so it never overwrites a run that finished concurrently —
+ * the re-read returns the run's true current status.
  */
 export const cancelRunV1RunsRunIdCancelPost = <ThrowOnError extends boolean = false>(options: Options<CancelRunV1RunsRunIdCancelPostData, ThrowOnError>): RequestResult<CancelRunV1RunsRunIdCancelPostResponses, CancelRunV1RunsRunIdCancelPostErrors, ThrowOnError> => (options.client ?? client).post<CancelRunV1RunsRunIdCancelPostResponses, CancelRunV1RunsRunIdCancelPostErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

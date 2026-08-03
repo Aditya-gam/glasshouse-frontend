@@ -117,6 +117,7 @@ export const zDefendEdit = z.object({
     crop: z.boolean().nullish(),
     date: z.string(),
     decoy: z.boolean().nullish(),
+    edited: z.string().nullish(),
     exif: z.boolean().nullish(),
     note: z.string().nullish(),
     original: z.string().nullish(),

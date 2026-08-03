@@ -292,6 +292,10 @@ export type DefendEdit = {
      */
     decoy?: boolean | null;
     /**
+     * Edited
+     */
+    edited?: string | null;
+    /**
      * Exif
      */
     exif?: boolean | null;
@@ -795,7 +799,7 @@ export type EraseAccountV1AccountDeleteErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -842,7 +846,7 @@ export type GetAccountV1AccountGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -889,7 +893,7 @@ export type RevokeConsentV1AccountConsentsDeleteErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -936,7 +940,7 @@ export type GrantConsentV1AccountConsentsPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -983,7 +987,7 @@ export type ExportAccountV1AccountExportPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1030,7 +1034,7 @@ export type SetRetentionV1AccountRetentionPutErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1077,7 +1081,7 @@ export type ListConnectorsV1ConnectorsGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1126,7 +1130,7 @@ export type StartConnectorV1ConnectorsPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1173,7 +1177,7 @@ export type ConnectorCallbackV1ConnectorsCallbackGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1225,7 +1229,7 @@ export type RevokeConnectorV1ConnectorsConnectorIdDeleteErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1277,7 +1281,7 @@ export type SyncConnectorV1ConnectorsConnectorIdSyncPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1318,7 +1322,7 @@ export type EvalCalibrationV1EvalCalibrationGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1359,7 +1363,7 @@ export type EvalResultsV1EvalResultsGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1408,7 +1412,7 @@ export type ListImportsV1ImportsGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1457,7 +1461,7 @@ export type CreateImportV1ImportsPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1509,7 +1513,7 @@ export type GetImportV1ImportsImportIdGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1565,7 +1569,7 @@ export type ListInferencesV1InferencesGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1619,7 +1623,7 @@ export type GetInferenceV1InferencesInferenceIdGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1671,7 +1675,7 @@ export type ConfirmInferenceV1InferencesInferenceIdConfirmPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1723,7 +1727,7 @@ export type CreateRemediationV1InferencesInferenceIdRemediationsPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1775,7 +1779,7 @@ export type ListRemediationsV1RemediationsGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1829,7 +1833,7 @@ export type GetRemediationV1RemediationsRemediationIdGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1876,7 +1880,7 @@ export type ListRunsV1RunsGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1929,7 +1933,7 @@ export type CreateRunV1RunsPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -1981,7 +1985,7 @@ export type ReadRunV1RunsRunIdGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -2033,7 +2037,7 @@ export type RunEventsV1RunsRunIdEventsGetErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -2083,7 +2087,7 @@ export type CancelRunV1RunsRunIdCancelPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
@@ -2124,7 +2128,7 @@ export type ClerkWebhookWebhooksClerkPostErrors = {
      */
     404: Problem;
     /**
-     * Unprocessable Content
+     * Unprocessable Entity
      */
     422: Problem;
     /**
