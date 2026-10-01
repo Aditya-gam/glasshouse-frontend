@@ -322,6 +322,17 @@ export const zRunStatus = z.object({
 });
 
 /**
+ * RunPage
+ *
+ * A cursor page of runs, newest first. `next_cursor` is null on the last page; clients echo
+ * it back as the `cursor` query param to fetch the next page and treat it as opaque.
+ */
+export const zRunPage = z.object({
+    items: z.array(zRunStatus),
+    next_cursor: z.string().nullish()
+});
+
+/**
  * Severity
  *
  * Per-persona severity matrix; the UI computes `balanced = max(atrisk, jobseeker)`.
@@ -650,12 +661,15 @@ export const zListRunsV1RunsGetHeaders = z.object({
     'x-dev-user-id': z.uuid().nullish()
 });
 
+export const zListRunsV1RunsGetQuery = z.object({
+    limit: z.int().gte(1).lte(100).optional().default(20),
+    cursor: z.string().nullish()
+});
+
 /**
- * Response List Runs V1 Runs Get
- *
  * Successful Response
  */
-export const zListRunsV1RunsGetResponse = z.array(zRunStatus);
+export const zListRunsV1RunsGetResponse = zRunPage;
 
 export const zCreateRunV1RunsPostBody = zRunCreate;
 
