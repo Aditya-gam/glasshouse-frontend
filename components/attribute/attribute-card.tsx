@@ -54,7 +54,8 @@ export function AttributeCard({ attr, level, detailHref, onFix }: AttributeCardP
         <SeverityChip level={level} />
       </div>
       <div className="attr-value">
-        {attr.value}
+        {/* A null value on a non-abstained card is a consent-masked Art. 9 inference. */}
+        {attr.value ?? "Hidden — consent required"}
         {attr.detail && <span className="attr-detail">· {attr.detail}</span>}
         {attr.art9 && (
           <span className="tag-art9" title="GDPR Article 9 — special category">

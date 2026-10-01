@@ -52,6 +52,20 @@ describe("AttributeCard", () => {
     expect(onFix).toHaveBeenCalledOnce();
   });
 
+  it("renders a consent-masked Art. 9 value as 'Hidden — consent required', never blank", () => {
+    const masked: AttrItem = {
+      ...location,
+      code: "birthplace",
+      label: "Birthplace",
+      value: null,
+      art9: true,
+    };
+    render(<AttributeCard attr={masked} level="high" />);
+    expect(screen.getByText(/Hidden — consent required/)).toBeInTheDocument();
+    expect(screen.getByText("Art. 9")).toBeInTheDocument();
+    expect(screen.getByText("86%")).toBeInTheDocument(); // reliability is not masked
+  });
+
   it("renders abstain as a first-class no-signal state (not a fabricated guess)", () => {
     const abstain: AttrItem = {
       ...location,

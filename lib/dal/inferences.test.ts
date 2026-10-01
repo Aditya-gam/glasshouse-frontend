@@ -12,13 +12,15 @@ vi.mock("server-only", () => ({}));
 vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ getToken }) }));
 
 import { BackendError } from "./backend";
-import { listInferences } from "./inferences";
+import { getAttributionDetail, listInferences } from "./inferences";
 
 const BASE = "http://localhost:8000";
 const RUN_ID = "11111111-1111-4111-8111-111111111111";
+const INFERENCE_ID = "8e7fab32-e609-4c9a-b970-0e13e6447236";
 
 /** A wire `AttributeRead` exactly as FastAPI serializes it (explicit nulls). */
 const WIRE_LOCATION = {
+  id: INFERENCE_ID,
   code: "location",
   label: "Current location",
   value: "Lisbon, Portugal",
@@ -61,6 +63,7 @@ describe("listInferences", () => {
     expect(seen?.auth).toBe("Bearer test-jwt");
     expect(items).toHaveLength(2);
     expect(items[0]).toMatchObject({
+      id: INFERENCE_ID, // the detail handle (BE #55) passes through
       code: "location",
       value: "Lisbon, Portugal",
       reliability: 87,
@@ -112,5 +115,120 @@ describe("listInferences", () => {
       ),
     );
     await expect(listInferences()).rejects.toThrow();
+  });
+});
+
+/** A wire `AttributeFindingRead` as the live backend serializes it (BE #55). */
+const WIRE_DETAIL = {
+  code: "location",
+  label: "Location",
+  value: "Seattle, USA",
+  detail: null,
+  reliability: { point: 0.86, lo: 0.8, hi: 0.9 },
+  severity: { atrisk: "extreme", jobseeker: "moderate" },
+  sensitive: false,
+  art9: false,
+  precision: "city",
+  neighborhood: null,
+  reasoning: "Posts reference Pike Place and SEA timezone.",
+  candidates: [{ rank: 1, label: "Seattle, USA", note: "" }],
+  text_only_reliability: { point: 0.74, lo: 0.7, hi: 0.78 },
+  evidence_items: [
+    {
+      id: "itm_1",
+      kind: "proven",
+      type: "text",
+      source: "Mastodon",
+      date: "9 Mar",
+      text: "Pike Place again",
+      spans: ["Pike Place"],
+      caption: null,
+      region: null,
+      exif: null,
+      rationale: "Landmark specific to Seattle.",
+      marginal: -21,
+      proxy: null,
+      citation: null,
+    },
+  ],
+};
+
+describe("getAttributionDetail", () => {
+  it("maps the wire finding + evidence to the UI shapes (reliability 0..1 → %)", async () => {
+    server.use(
+      http.get(`${BASE}/v1/inferences/${INFERENCE_ID}`, () => HttpResponse.json(WIRE_DETAIL)),
+    );
+    const detail = await getAttributionDetail(INFERENCE_ID);
+    expect(detail?.masked).toBe(false);
+    expect(detail?.finding).toMatchObject({
+      code: "location",
+      value: "Seattle, USA",
+      reliability: 86,
+      lo: 80,
+      hi: 90,
+      textOnlyReliability: 74,
+      neighborhood: null,
+    });
+    expect(detail?.evidence[0]).toMatchObject({
+      id: "itm_1",
+      kind: "proven",
+      rationale: "Landmark specific to Seattle.",
+      marginal: -21,
+    });
+    expect(detail?.evidence[0]).not.toHaveProperty("exif"); // nulls become absent keys
+  });
+
+  it("detects the consent-masked Art. 9 state (fail-closed nulls, severity kept)", async () => {
+    server.use(
+      http.get(`${BASE}/v1/inferences/${INFERENCE_ID}`, () =>
+        HttpResponse.json({
+          ...WIRE_DETAIL,
+          code: "birthplace",
+          label: "Birthplace",
+          art9: true,
+          value: null,
+          reasoning: "",
+          candidates: [],
+          evidence_items: [],
+        }),
+      ),
+    );
+    const detail = await getAttributionDetail(INFERENCE_ID);
+    expect(detail?.masked).toBe(true);
+    expect(detail?.finding.value).toBeNull();
+    expect(detail?.finding.reliability).toBe(86); // reliability is NOT masked
+  });
+
+  it("returns null on 404 (absent or another user's — RLS, no IDOR signal)", async () => {
+    server.use(
+      http.get(`${BASE}/v1/inferences/${INFERENCE_ID}`, () =>
+        HttpResponse.json(
+          { type: "about:blank", title: "Not Found", status: 404 },
+          { status: 404 },
+        ),
+      ),
+    );
+    await expect(getAttributionDetail(INFERENCE_ID)).resolves.toBeNull();
+  });
+
+  it("returns null for an uncalibrated finding (never renders a raw number as calibrated)", async () => {
+    server.use(
+      http.get(`${BASE}/v1/inferences/${INFERENCE_ID}`, () =>
+        HttpResponse.json({ ...WIRE_DETAIL, reliability: null }),
+      ),
+    );
+    await expect(getAttributionDetail(INFERENCE_ID)).resolves.toBeNull();
+  });
+
+  it("throws a typed BackendError on a non-404 failure", async () => {
+    server.use(
+      http.get(`${BASE}/v1/inferences/${INFERENCE_ID}`, () =>
+        HttpResponse.json(
+          { type: "about:blank", title: "Internal Server Error", status: 500 },
+          { status: 500 },
+        ),
+      ),
+    );
+    await expect(getAttributionDetail(INFERENCE_ID)).rejects.toBeInstanceOf(BackendError);
   });
 });

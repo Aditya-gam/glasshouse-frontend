@@ -26,6 +26,15 @@ describe("Dashboard (integration)", () => {
     expect(screen.getByRole("link", { name: "Open Current location detail" })).toBeInTheDocument();
   });
 
+  it("loaded: a LIVE inference (one with an id) links to its detail whatever its code", () => {
+    const live = ATTRIBUTES.map((attr) =>
+      attr.code === "occupation" ? { ...attr, id: "8e7fab32-e609-4c9a-b970-0e13e6447236" } : attr,
+    );
+    render(<Dashboard attrs={live} initialState="loaded" />);
+    const link = screen.getByRole("link", { name: "Open Occupation detail" });
+    expect(link).toHaveAttribute("href", "/attribute/occupation");
+  });
+
   it("empty: prompts to connect and shows no attribute cards", () => {
     render(<Dashboard attrs={ATTRIBUTES} initialState="empty" />);
     expect(screen.getByText("Nothing to analyze yet")).toBeInTheDocument();
