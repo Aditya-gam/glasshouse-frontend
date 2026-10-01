@@ -31,7 +31,7 @@
         "type": "object"
       },
       "AttributeFindingRead": {
-        "description": "Attribution detail — AttributeRead enriched with candidates + per-item evidence.",
+        "description": "Attribution detail \u2014 AttributeRead enriched with candidates + per-item evidence.",
         "properties": {
           "art9": {
             "anyOf": [
@@ -163,7 +163,7 @@
         "type": "object"
       },
       "AttributeRead": {
-        "description": "A dashboard attribute card. `null` reliability ⇔ abstain.",
+        "description": "A dashboard attribute card. `null` reliability \u21d4 abstain.",
         "properties": {
           "abstain": {
             "anyOf": [
@@ -216,6 +216,18 @@
               }
             ],
             "title": "Evidence Count"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
           },
           "label": {
             "title": "Label",
@@ -378,7 +390,7 @@
         "type": "object"
       },
       "ConnectedAccountRead": {
-        "description": "Linked account — status + handle only, never tokens.",
+        "description": "Linked account \u2014 status + handle only, never tokens.",
         "properties": {
           "handle": {
             "anyOf": [
@@ -793,7 +805,7 @@
         "type": "object"
       },
       "EvidenceRead": {
-        "description": "One piece of evidence — `proven` (causal ablation) or `likely` (correlational).",
+        "description": "One piece of evidence \u2014 `proven` (causal ablation) or `likely` (correlational).",
         "properties": {
           "caption": {
             "anyOf": [
@@ -1021,7 +1033,7 @@
         "type": "object"
       },
       "InferenceConfirm": {
-        "description": "POST /v1/inferences/{id}/confirm — the user confirms/denies (a live ground-truth signal).",
+        "description": "POST /v1/inferences/{id}/confirm \u2014 the user confirms/denies (a live ground-truth signal).",
         "properties": {
           "confirmed": {
             "title": "Confirmed",
@@ -1086,7 +1098,7 @@
         "type": "object"
       },
       "Reliability": {
-        "description": "Calibrated reliability — point estimate + interval, 0..1 (the UI renders %).",
+        "description": "Calibrated reliability \u2014 point estimate + interval, 0..1 (the UI renders %).",
         "properties": {
           "hi": {
             "title": "Hi",
@@ -1110,7 +1122,7 @@
         "type": "object"
       },
       "RemediationCreate": {
-        "description": "POST /v1/inferences/{id}/remediations — decoy requires per-use consent.",
+        "description": "POST /v1/inferences/{id}/remediations \u2014 decoy requires per-use consent.",
         "properties": {
           "decoy": {
             "default": false,
@@ -1181,7 +1193,7 @@
         "type": "object"
       },
       "RunAccepted": {
-        "description": "202 response — the client polls GET /v1/runs/{id} until terminal.",
+        "description": "202 response \u2014 the client polls GET /v1/runs/{id} until terminal.",
         "properties": {
           "run_id": {
             "format": "uuid",
@@ -1320,7 +1332,7 @@
   "paths": {
     "/healthz": {
       "get": {
-        "description": "Liveness probe — used by the container HEALTHCHECK and the load balancer.",
+        "description": "Liveness probe \u2014 used by the container HEALTHCHECK and the load balancer.",
         "operationId": "healthz_healthz_get",
         "responses": {
           "200": {
@@ -1343,7 +1355,7 @@
     },
     "/readyz": {
       "get": {
-        "description": "Readiness probe — verifies the database is reachable.",
+        "description": "Readiness probe \u2014 verifies the database is reachable.",
         "operationId": "readyz_readyz_get",
         "responses": {
           "200": {
@@ -1366,7 +1378,7 @@
     },
     "/v1/account": {
       "delete": {
-        "description": "Erasure — crypto-shred + cascade + object deletion.",
+        "description": "Erasure \u2014 crypto-shred + cascade + object deletion.",
         "operationId": "erase_account_v1_account_delete",
         "parameters": [
           {
@@ -2097,7 +2109,7 @@
         ]
       },
       "post": {
-        "description": "Begin read-only OAuth → returns the authorize URL.",
+        "description": "Begin read-only OAuth \u2192 returns the authorize URL.",
         "operationId": "start_connector_v1_connectors_post",
         "parameters": [
           {
@@ -2208,7 +2220,7 @@
     },
     "/v1/connectors/callback": {
       "get": {
-        "description": "Finish OAuth → store the encrypted token (read-only scopes).",
+        "description": "Finish OAuth \u2192 store the encrypted token (read-only scopes).",
         "operationId": "connector_callback_v1_connectors_callback_get",
         "parameters": [
           {
@@ -2522,7 +2534,7 @@
     },
     "/v1/eval/calibration": {
       "get": {
-        "description": "The reliability curve (calibrated reliability + the noise model).",
+        "description": "The reliability curve (calibrated reliability + benchmark rows) for the trust display.\n\n`rows` is the latest benchmark's per-attribute accuracy; `calibration` is the pooled\n`[predicted, empirical]` curve for that same run's engine (so both halves describe one engine).\nBoth empty until an eval has run.",
         "operationId": "eval_calibration_v1_eval_calibration_get",
         "responses": {
           "200": {
@@ -2599,7 +2611,7 @@
     },
     "/v1/eval/results": {
       "get": {
-        "description": "Top-1/top-3 per attribute + modality + engine_version — the accuracy-trust view.",
+        "description": "Top-1/top-3 per attribute + modality + engine_version \u2014 the accuracy-trust view.\n\nThe latest benchmark run's per-attribute accuracy; empty until an eval has run.",
         "operationId": "eval_results_v1_eval_results_get",
         "responses": {
           "200": {
@@ -2782,7 +2794,7 @@
         ]
       },
       "post": {
-        "description": "Upload an export/photo set → an ingestion run (202 + run_id).",
+        "description": "Upload an export/photo set \u2192 an ingestion run (202 + run_id).",
         "operationId": "create_import_v1_imports_post",
         "parameters": [
           {
@@ -3132,7 +3144,7 @@
     },
     "/v1/inferences/{inference_id}": {
       "get": {
-        "description": "Ranked candidates with calibrated reliability + the evidence join. Lands with M3.",
+        "description": "One inference's attribution detail \u2014 ranked candidates + per-item evidence (RLS-scoped).\n\nTenant-scoped to the caller's RLS context: another user's id (or a missing one) \u2192 404, never a\ncross-tenant read (no IDOR). Special-category values/reasoning are decrypted only under valid\nArt. 9 consent and masked otherwise (fail closed). Content is decrypted in-query, never logged.",
         "operationId": "get_inference_v1_inferences__inference_id__get",
         "parameters": [
           {
@@ -3717,7 +3729,7 @@
     },
     "/v1/runs": {
       "get": {
-        "description": "Cursor-paginated list — lands with M5.2 (routers + pagination).",
+        "description": "Cursor-paginated list \u2014 lands with M5.2 (routers + pagination).",
         "operationId": "list_runs_v1_runs_get",
         "parameters": [
           {
@@ -4058,7 +4070,7 @@
     },
     "/v1/runs/{run_id}/events": {
       "get": {
-        "description": "SSE stream of run status; 404 if absent or RLS-hidden.\n\nAuth is the standard bearer — the FE proxies the stream and injects it server-side (decision\n(c)), since browser EventSource can't set headers.",
+        "description": "SSE stream of run status; 404 if absent or RLS-hidden.\n\nAuth is the standard bearer \u2014 the FE proxies the stream and injects it server-side (decision\n(c)), since browser EventSource can't set headers.",
         "operationId": "run_events_v1_runs__run_id__events_get",
         "parameters": [
           {
@@ -4165,7 +4177,7 @@
     },
     "/v1/runs/{run_id}:cancel": {
       "post": {
-        "description": "Request cancellation. A queued/running run is marked `canceled` (the worker won't start, or\nwon't finish, a canceled run); a terminal run is unchanged. 404 if absent or RLS-hidden.\n\nThe transition is status-guarded, so it never overwrites a run that finished concurrently —\nthe re-read returns the run's true current status.",
+        "description": "Request cancellation. A queued/running run is marked `canceled` (the worker won't start, or\nwon't finish, a canceled run); a terminal run is unchanged. 404 if absent or RLS-hidden.\n\nThe transition is status-guarded, so it never overwrites a run that finished concurrently \u2014\nthe re-read returns the run's true current status.",
         "operationId": "cancel_run_v1_runs__run_id__cancel_post",
         "parameters": [
           {

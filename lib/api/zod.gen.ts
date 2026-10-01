@@ -375,6 +375,7 @@ export const zAttributeRead = z.object({
     detail: z.string().nullable(),
     evidence: z.string(),
     evidence_count: z.int().nullish(),
+    id: z.uuid().nullish(),
     label: z.string(),
     reliability: zReliability.nullable(),
     sensitive: z.boolean().nullish(),
