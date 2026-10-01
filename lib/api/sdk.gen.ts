@@ -210,6 +210,9 @@ export const getImportV1ImportsImportIdGet = <ThrowOnError extends boolean = fal
  * List Inferences
  *
  * The user's attribute cards (RLS-scoped), optionally filtered to one run / profile.
+ *
+ * Special-category (Art. 9) values are decrypted only under valid `art9_inference` consent and
+ * masked otherwise — the same fail-closed gate as the attribution detail.
  */
 export const listInferencesV1InferencesGet = <ThrowOnError extends boolean = false>(options?: Options<ListInferencesV1InferencesGetData, ThrowOnError>): RequestResult<ListInferencesV1InferencesGetResponses, ListInferencesV1InferencesGetErrors, ThrowOnError> => (options?.client ?? client).get<ListInferencesV1InferencesGetResponses, ListInferencesV1InferencesGetErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -288,7 +291,10 @@ export const getRemediationV1RemediationsRemediationIdGet = <ThrowOnError extend
 /**
  * List Runs
  *
- * Cursor-paginated list — lands with M5.2 (routers + pagination).
+ * The caller's runs, newest first, cursor-paginated (RLS-scoped).
+ *
+ * `cursor` is an opaque token from a prior page's `next_cursor` — omit it for the first page. A
+ * malformed cursor is a 422. `next_cursor` is null on the last page. Keyset, not OFFSET.
  */
 export const listRunsV1RunsGet = <ThrowOnError extends boolean = false>(options?: Options<ListRunsV1RunsGetData, ThrowOnError>): RequestResult<ListRunsV1RunsGetResponses, ListRunsV1RunsGetErrors, ThrowOnError> => (options?.client ?? client).get<ListRunsV1RunsGetResponses, ListRunsV1RunsGetErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

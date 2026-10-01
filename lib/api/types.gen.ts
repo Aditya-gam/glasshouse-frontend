@@ -693,6 +693,23 @@ export type RunCreate = {
 };
 
 /**
+ * RunPage
+ *
+ * A cursor page of runs, newest first. `next_cursor` is null on the last page; clients echo
+ * it back as the `cursor` query param to fetch the next page and treat it as opaque.
+ */
+export type RunPage = {
+    /**
+     * Items
+     */
+    items: Array<RunStatus>;
+    /**
+     * Next Cursor
+     */
+    next_cursor?: string | null;
+};
+
+/**
  * RunStatus
  *
  * Poll response for a run.
@@ -1866,7 +1883,16 @@ export type ListRunsV1RunsGetData = {
         'x-dev-user-id'?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Cursor
+         */
+        cursor?: string | null;
+    };
     url: '/v1/runs';
 };
 
@@ -1897,11 +1923,9 @@ export type ListRunsV1RunsGetError = ListRunsV1RunsGetErrors[keyof ListRunsV1Run
 
 export type ListRunsV1RunsGetResponses = {
     /**
-     * Response List Runs V1 Runs Get
-     *
      * Successful Response
      */
-    200: Array<RunStatus>;
+    200: RunPage;
 };
 
 export type ListRunsV1RunsGetResponse = ListRunsV1RunsGetResponses[keyof ListRunsV1RunsGetResponses];
