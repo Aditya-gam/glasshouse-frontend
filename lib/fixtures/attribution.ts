@@ -6,17 +6,20 @@ import type { Lens, SeverityLevel } from "@/lib/schemas/attribute";
 export interface LocationFinding {
   code: string;
   label: string;
-  value: string;
-  precision: string;
-  neighborhood: string;
+  /** Null when the value is consent-masked (Art. 9 without `art9_inference` consent). */
+  value: string | null;
+  precision: string | null;
+  neighborhood: string | null;
   reliability: number;
   lo: number;
   hi: number;
   sev: { atrisk: SeverityLevel; jobseeker: SeverityLevel };
   reasoning: string;
   candidates: { rank: number; label: string; note: string }[];
-  /** Reliability the text alone supports if the GPS photo is removed (sets up Defend). */
-  textOnlyReliability: number;
+  /** Reliability the text alone supports if the strongest item is removed (sets up Defend). */
+  textOnlyReliability?: number;
+  /** The evidence intro's "how the pieces add up" line; absent → only the text-only sentence. */
+  collective?: string;
 }
 
 export type EvidenceKind = "proven" | "likely";
@@ -59,6 +62,17 @@ export const LOCATION: LocationFinding = {
     { rank: 3, label: "Porto, Portugal", note: "weighed, lower" },
   ],
   textOnlyReliability: 74,
+  collective:
+    "Six individually-bland posts triangulate your city. No single one names Lisbon — together they pin it. A photo's GPS narrows it to your neighborhood.",
+};
+
+/** Persona framing for attributes without bespoke copy (the live path's default). */
+export const GENERIC_WHY: Record<Lens, string> = {
+  balanced: "This is inferable from your public footprint — decide if that's acceptable to you.",
+  atrisk:
+    "For your safety: anything inferable from public posts is available to a hostile party too.",
+  jobseeker:
+    "For your reputation: assume anyone evaluating you can see what's inferable from public posts.",
 };
 
 export const LOCATION_WHY: Record<Lens, string> = {

@@ -31,6 +31,8 @@ export type AttributeCode = z.infer<typeof attributeCodeSchema>;
  * "no signal" attribute. Mirrors HANDOFF §3 / 06-api `AttributeRead`.
  */
 export const attrItemSchema = z.object({
+  /** The latest inference's id → `GET /v1/inferences/{id}` (absent ⇔ no run yet). */
+  id: z.uuid().optional(),
   code: attributeCodeSchema,
   label: z.string(),
   value: z.string().nullable(),

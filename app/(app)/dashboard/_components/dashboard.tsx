@@ -202,13 +202,16 @@ export function Dashboard({
                 : ordered.map((attr, i) => {
                     if (view === "loading" && i >= run.revealed)
                       return <SkelCard key={attr.code} />;
+                    // A live inference (it has an id) always links to its detail; in the
+                    // fixture demo only location has a wired detail screen.
+                    const linked = attr.id != null || attr.code === "location";
                     return (
                       <AttributeCard
                         key={attr.code}
                         attr={attr}
                         level={severityFor(attr, lens)}
-                        detailHref={attr.code === "location" ? "/attribute/location" : null}
-                        onFix={attr.code === "location" ? undefined : fixToast(attr)}
+                        detailHref={linked ? `/attribute/${attr.code}` : null}
+                        onFix={linked ? undefined : fixToast(attr)}
                       />
                     );
                   })}

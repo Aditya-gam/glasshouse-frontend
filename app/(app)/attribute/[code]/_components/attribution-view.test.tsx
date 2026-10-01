@@ -32,8 +32,54 @@ describe("AttributionView", () => {
     expect(container).not.toBeEmptyDOMElement();
   });
 
-  it("has no a11y violations (loaded)", async () => {
-    const { container } = render(<AttributionView {...props} initialState="loaded" />);
+  it("threads the live inference id into the Defend handoff link", () => {
+    render(
+      <AttributionView
+        {...props}
+        initialState="loaded"
+        inferenceId="8e7fab32-e609-4c9a-b970-0e13e6447236"
+      />,
+    );
+    expect(screen.getByRole("link", { name: /Break this inference/ })).toHaveAttribute(
+      "href",
+      "/defend/location?inference=8e7fab32-e609-4c9a-b970-0e13e6447236",
+    );
+  });
+
+  it("masked: renders the consent affordance in place of value, evidence, and reasoning", () => {
+    render(
+      <AttributionView
+        {...props}
+        finding={{ ...LOCATION, value: null }}
+        initialState="loaded"
+        masked
+      />,
+    );
+    expect(screen.getByText("Consent required to reveal")).toBeInTheDocument();
+    expect(screen.getByText(/Hidden — consent required/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Review consent in Account/ })).toHaveAttribute(
+      "href",
+      "/account",
+    );
+    // Sealed content never leaks: no evidence items, reasoning, or candidates.
+    expect(screen.queryByText(EVIDENCE[0].rationale)).not.toBeInTheDocument();
+    expect(screen.queryByText(/How it was inferred/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Top guess/)).not.toBeInTheDocument();
+    // Calibrated reliability stays visible — honesty about exposure is the product.
+    expect(screen.getByText(`${LOCATION.reliability}%`)).toBeInTheDocument();
+  });
+
+  it("has no a11y violations (loaded and masked)", async () => {
+    const { container, rerender } = render(<AttributionView {...props} initialState="loaded" />);
+    expect((await axe(container)).violations).toEqual([]);
+    rerender(
+      <AttributionView
+        {...props}
+        finding={{ ...LOCATION, value: null }}
+        initialState="loaded"
+        masked
+      />,
+    );
     expect((await axe(container)).violations).toEqual([]);
   });
 });

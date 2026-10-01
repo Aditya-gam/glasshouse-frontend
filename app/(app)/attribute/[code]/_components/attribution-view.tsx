@@ -32,6 +32,10 @@ interface AttributionViewProps {
   finding: LocationFinding;
   why: Record<Lens, string>;
   evidence: EvidenceItemData[];
+  /** Art. 9 finding served consent-masked — a real state with a consent affordance. */
+  masked?: boolean;
+  /** The live inference id — carried into the Defend handoff (`?inference=`). */
+  inferenceId?: string;
 }
 
 function humanize(code: string): string {
@@ -54,14 +58,14 @@ export function AttributionView({
   finding,
   why,
   evidence,
+  masked = false,
+  inferenceId,
 }: AttributionViewProps) {
   const { lens } = useLens();
-  // Only `location` is fully wired; any other attribute shows the abstained empty state.
-  const [view, setView] = useState<AttributionViewState>(
-    code === "location" ? initialState : "empty",
-  );
+  // The page/accessor owns the honest state (live data can exist for any attribute).
+  const [view, setView] = useState<AttributionViewState>(initialState);
   const level = lensSeverity(finding.sev, lens);
-  const attrLabel = code === "location" ? finding.label : humanize(code);
+  const attrLabel = finding.code === code ? finding.label : humanize(code);
 
   const crumbs = (
     <Breadcrumb items={[{ label: "Dashboard", href: "/dashboard" }, { label: attrLabel }]} />
@@ -112,44 +116,72 @@ export function AttributionView({
             <section className="evidence" aria-label="Evidence">
               <div className="ev-intro">
                 <h2>Why this inference?</h2>
-                <p className="ev-collective">
-                  <b>Six individually-bland posts triangulate your city.</b> No single one names
-                  Lisbon — together they pin it. A photo&rsquo;s GPS narrows it to your
-                  neighborhood. Even without that photo, the text alone still points here (≈
-                  {finding.textOnlyReliability}
-                  %).
-                </p>
-                <div className="ev-legend">
-                  <span className="ev-legend-item">
-                    <KindBadge kind="proven" />{" "}
-                    <span>
-                      <b>Proven</b> — removing it measurably drops the inference (ablation).
+                {(finding.collective || finding.textOnlyReliability !== undefined) && !masked && (
+                  <p className="ev-collective">
+                    {finding.collective && <>{finding.collective} </>}
+                    {finding.textOnlyReliability !== undefined && (
+                      <>
+                        Even without the strongest item, the text alone still points here (≈
+                        {finding.textOnlyReliability}%).
+                      </>
+                    )}
+                  </p>
+                )}
+                {!masked && (
+                  <div className="ev-legend">
+                    <span className="ev-legend-item">
+                      <KindBadge kind="proven" />{" "}
+                      <span>
+                        <b>Proven</b> — removing it measurably drops the inference (ablation).
+                      </span>
                     </span>
-                  </span>
-                  <span className="ev-legend-item">
-                    <KindBadge kind="likely" />{" "}
-                    <span>
-                      <b>Likely</b> — the attack cited it, but it isn&rsquo;t decisive alone.
+                    <span className="ev-legend-item">
+                      <KindBadge kind="likely" />{" "}
+                      <span>
+                        <b>Likely</b> — the attack cited it, but it isn&rsquo;t decisive alone.
+                      </span>
                     </span>
-                  </span>
+                  </div>
+                )}
+              </div>
+              {masked ? (
+                <div className="attr-state-host">
+                  <EmptyState
+                    icon="lock"
+                    title="Consent required to reveal"
+                    message="This is a special-category (GDPR Article 9) inference. Its value, reasoning, and evidence stay sealed until you grant special-category consent — we never show it by default."
+                    message2="Granting consent reveals it to you only; revoking re-seals it."
+                    action="Review consent in Account"
+                    actionHref="/account"
+                  />
                 </div>
-              </div>
-              <div className="ev-list">
-                {evidence.map((item) => (
-                  <EvidenceItem key={item.id} item={item} />
-                ))}
-              </div>
+              ) : (
+                <div className="ev-list">
+                  {evidence.map((item) => (
+                    <EvidenceItem key={item.id} item={item} />
+                  ))}
+                </div>
+              )}
             </section>
 
             <aside className="summary">
               <div className="summary-card">
                 <div className="sum-attr">{finding.label}</div>
-                <div className="sum-value">
-                  {finding.value} <span className="sum-detail">· {finding.precision}</span>
-                </div>
+                {masked ? (
+                  <div className="sum-value">
+                    <Icon name="lock" size={16} /> Hidden — consent required
+                  </div>
+                ) : (
+                  <div className="sum-value">
+                    {finding.value}
+                    {finding.precision && <span className="sum-detail">· {finding.precision}</span>}
+                  </div>
+                )}
                 <div className="sum-sevrow">
                   <SeverityChip level={level} />
-                  <span className="sum-pin">pinned to {finding.neighborhood}</span>
+                  {!masked && finding.neighborhood && (
+                    <span className="sum-pin">pinned to {finding.neighborhood}</span>
+                  )}
                 </div>
                 <p className="sum-why">{why[lens]}</p>
 
@@ -165,24 +197,41 @@ export function AttributionView({
                   </div>
                 </div>
 
-                <div className="sum-reasoning">
-                  <span className="sum-reasoning-k">How it was inferred</span>
-                  {finding.reasoning}
-                </div>
-                <div className="sum-cands">
-                  <b>Top guess</b> {finding.candidates[0].label} · also weighed{" "}
-                  {finding.candidates
-                    .slice(1)
-                    .map((c) => c.label)
-                    .join(" · ")}
-                </div>
+                {!masked && finding.reasoning && (
+                  <div className="sum-reasoning">
+                    <span className="sum-reasoning-k">How it was inferred</span>
+                    {finding.reasoning}
+                  </div>
+                )}
+                {!masked && finding.candidates.length > 0 && (
+                  <div className="sum-cands">
+                    <b>Top guess</b> {finding.candidates[0].label}
+                    {finding.candidates.length > 1 && (
+                      <>
+                        {" "}
+                        · also weighed{" "}
+                        {finding.candidates
+                          .slice(1)
+                          .map((c) => c.label)
+                          .join(" · ")}
+                      </>
+                    )}
+                  </div>
+                )}
 
-                <hr className="sum-sep" />
-                <Verify />
+                {!masked && (
+                  <>
+                    <hr className="sum-sep" />
+                    <Verify />
+                  </>
+                )}
 
                 <hr className="sum-sep" />
                 <div className="sum-cta">
-                  <Link href="/defend/location" className={cn(buttonVariants(), "w-full")}>
+                  <Link
+                    href={`/defend/${code}${inferenceId ? `?inference=${inferenceId}` : ""}`}
+                    className={cn(buttonVariants(), "w-full")}
+                  >
                     Break this inference <Icon name="arrow-right" size={15} />
                   </Link>
                 </div>
