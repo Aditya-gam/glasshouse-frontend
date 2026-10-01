@@ -160,7 +160,11 @@ export const syncConnectorV1ConnectorsConnectorIdSyncPost = <ThrowOnError extend
 /**
  * Eval Calibration
  *
- * The reliability curve (calibrated reliability + the noise model).
+ * The reliability curve (calibrated reliability + benchmark rows) for the trust display.
+ *
+ * `rows` is the latest benchmark's per-attribute accuracy; `calibration` is the pooled
+ * `[predicted, empirical]` curve for that same run's engine (so both halves describe one engine).
+ * Both empty until an eval has run.
  */
 export const evalCalibrationV1EvalCalibrationGet = <ThrowOnError extends boolean = false>(options?: Options<EvalCalibrationV1EvalCalibrationGetData, ThrowOnError>): RequestResult<EvalCalibrationV1EvalCalibrationGetResponses, EvalCalibrationV1EvalCalibrationGetErrors, ThrowOnError> => (options?.client ?? client).get<EvalCalibrationV1EvalCalibrationGetResponses, EvalCalibrationV1EvalCalibrationGetErrors, ThrowOnError>({ url: '/v1/eval/calibration', ...options });
 
@@ -168,6 +172,8 @@ export const evalCalibrationV1EvalCalibrationGet = <ThrowOnError extends boolean
  * Eval Results
  *
  * Top-1/top-3 per attribute + modality + engine_version — the accuracy-trust view.
+ *
+ * The latest benchmark run's per-attribute accuracy; empty until an eval has run.
  */
 export const evalResultsV1EvalResultsGet = <ThrowOnError extends boolean = false>(options?: Options<EvalResultsV1EvalResultsGetData, ThrowOnError>): RequestResult<EvalResultsV1EvalResultsGetResponses, EvalResultsV1EvalResultsGetErrors, ThrowOnError> => (options?.client ?? client).get<EvalResultsV1EvalResultsGetResponses, EvalResultsV1EvalResultsGetErrors, ThrowOnError>({ url: '/v1/eval/results', ...options });
 
@@ -214,7 +220,11 @@ export const listInferencesV1InferencesGet = <ThrowOnError extends boolean = fal
 /**
  * Get Inference
  *
- * Ranked candidates with calibrated reliability + the evidence join. Lands with M3.
+ * One inference's attribution detail — ranked candidates + per-item evidence (RLS-scoped).
+ *
+ * Tenant-scoped to the caller's RLS context: another user's id (or a missing one) → 404, never a
+ * cross-tenant read (no IDOR). Special-category values/reasoning are decrypted only under valid
+ * Art. 9 consent and masked otherwise (fail closed). Content is decrypted in-query, never logged.
  */
 export const getInferenceV1InferencesInferenceIdGet = <ThrowOnError extends boolean = false>(options: Options<GetInferenceV1InferencesInferenceIdGetData, ThrowOnError>): RequestResult<GetInferenceV1InferencesInferenceIdGetResponses, GetInferenceV1InferencesInferenceIdGetErrors, ThrowOnError> => (options.client ?? client).get<GetInferenceV1InferencesInferenceIdGetResponses, GetInferenceV1InferencesInferenceIdGetErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

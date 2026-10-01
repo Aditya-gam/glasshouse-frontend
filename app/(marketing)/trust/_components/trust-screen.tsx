@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/states/empty-state";
 import { ErrorState } from "@/components/states/error-state";
 import { buttonVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import type { BenchRow, CalibPoint } from "@/lib/fixtures/trust";
 import { cn } from "@/lib/utils";
 
 import { BenchmarkSection } from "./benchmark";
@@ -17,7 +18,13 @@ import "../trust.css";
 
 export type TrustViewState = "loaded" | "loading" | "empty" | "error";
 
-export function TrustScreen({ initialState }: { initialState: TrustViewState }) {
+interface TrustScreenProps {
+  initialState: TrustViewState;
+  bench: BenchRow[];
+  calib: CalibPoint[];
+}
+
+export function TrustScreen({ initialState, bench, calib }: Readonly<TrustScreenProps>) {
   const [view, setView] = useState<TrustViewState>(initialState);
 
   return (
@@ -72,8 +79,8 @@ export function TrustScreen({ initialState }: { initialState: TrustViewState }) 
 
         {(view === "loaded" || view === "loading") && (
           <>
-            <BenchmarkSection loading={view === "loading"} />
-            <CalibrationSection loading={view === "loading"} />
+            <BenchmarkSection loading={view === "loading"} bench={bench} />
+            <CalibrationSection loading={view === "loading"} calib={calib} />
           </>
         )}
         {view === "empty" && (

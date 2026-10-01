@@ -1,6 +1,6 @@
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BENCH } from "@/lib/fixtures/trust";
+import type { BenchRow } from "@/lib/fixtures/trust";
 
 const SKELETON_ROWS = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
@@ -22,7 +22,10 @@ function BenchSkeleton() {
   );
 }
 
-export function BenchmarkSection({ loading }: Readonly<{ loading: boolean }>) {
+export function BenchmarkSection({
+  loading,
+  bench,
+}: Readonly<{ loading: boolean; bench: BenchRow[] }>) {
   return (
     <section className="trust-sec">
       <p className="sec-eyebrow">
@@ -46,7 +49,7 @@ export function BenchmarkSection({ loading }: Readonly<{ loading: boolean }>) {
               <span className="bench-key bench-key--top3" /> Top-3 accuracy
             </span>
           </div>
-          {BENCH.map((b) => (
+          {bench.map((b) => (
             <div className="bench-row" key={b.label}>
               <div className="bench-label">{b.label}</div>
               <div className="bench-track">

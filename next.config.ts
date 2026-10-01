@@ -22,6 +22,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // The dev-overlay indicator is focusable in Next 16.3+, stealing the first Tab stop from the
+  // skip link and breaking keyboard-order tests (dev/CI run against `next dev`). Dev-only UI.
+  devIndicators: false,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

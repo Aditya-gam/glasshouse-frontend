@@ -1,11 +1,11 @@
-import { CALIB } from "@/lib/fixtures/trust";
+import type { CalibPoint } from "@/lib/fixtures/trust";
 
 /**
- * SVG reliability diagram: predicted reliability vs measured accuracy for location.
+ * SVG reliability diagram: predicted reliability vs measured accuracy.
  * `role="img"` + a spoken summary; the underlying data table is the M5.7 a11y add
  * (HANDOFF §6 gap #4).
  */
-export function CalibrationChart() {
+export function CalibrationChart({ calib }: Readonly<{ calib: CalibPoint[] }>) {
   const X0 = 30;
   const X1 = 190;
   const Y0 = 170;
@@ -13,17 +13,15 @@ export function CalibrationChart() {
   const px = (p: number) => X0 + p * (X1 - X0);
   const py = (e: number) => Y0 - e * (Y0 - Y1);
   const ticks = [0, 0.25, 0.5, 0.75, 1];
-  const pts = CALIB.map(([p, e]) => `${px(p).toFixed(1)},${py(e).toFixed(1)}`).join(" ");
-  const hi = CALIB.find(([p]) => Math.abs(p - 0.8) < 1e-9);
+  const pts = calib.map(([p, e]) => `${px(p).toFixed(1)},${py(e).toFixed(1)}`).join(" ");
+  const hi = calib.find(([p]) => Math.abs(p - 0.8) < 1e-9);
+  const summary = hi
+    ? `Calibration reliability diagram: predicted reliability versus measured accuracy. A 0.80 prediction is right about ${hi[1].toFixed(2)} of the time.`
+    : "Calibration reliability diagram: predicted reliability versus measured accuracy.";
 
   return (
     <>
-      <svg
-        className="calib-svg"
-        viewBox="0 0 200 200"
-        role="img"
-        aria-label="Calibration reliability diagram: predicted reliability versus measured accuracy for location. A 0.80 prediction is right about 0.76 of the time."
-      >
+      <svg className="calib-svg" viewBox="0 0 200 200" role="img" aria-label={summary}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={px(t)} y1={Y1} x2={px(t)} y2={Y0} stroke="var(--border)" strokeWidth="0.5" />
@@ -53,7 +51,7 @@ export function CalibrationChart() {
           strokeLinejoin="round"
           strokeLinecap="round"
         />
-        {CALIB.map(([p, e]) => (
+        {calib.map(([p, e]) => (
           <circle key={p} cx={px(p)} cy={py(e)} r="2.4" fill="var(--primary)" />
         ))}
         {hi && (
@@ -91,7 +89,7 @@ export function CalibrationChart() {
         </text>
       </svg>
       <table className="sr-only">
-        <caption>Calibration: predicted reliability versus measured accuracy for location.</caption>
+        <caption>Calibration: predicted reliability versus measured accuracy.</caption>
         <thead>
           <tr>
             <th scope="col">Predicted reliability</th>
@@ -99,7 +97,7 @@ export function CalibrationChart() {
           </tr>
         </thead>
         <tbody>
-          {CALIB.map(([p, e]) => (
+          {calib.map(([p, e]) => (
             <tr key={p}>
               <td>{p.toFixed(2)}</td>
               <td>{e.toFixed(2)}</td>

@@ -105,6 +105,10 @@ export type AttributeRead = {
      */
     evidence_count?: number | null;
     /**
+     * Id
+     */
+    id?: string | null;
+    /**
      * Label
      */
     label: string;
