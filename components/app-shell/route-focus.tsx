@@ -10,13 +10,15 @@ import { useEffect, useRef } from "react";
  */
 export function RouteFocus() {
   const pathname = usePathname();
-  const isFirstRender = useRef(true);
+  // Track the last-seen pathname instead of a first-render flag: StrictMode (and Next 16.3's
+  // dev effect replay) re-runs mount effects, which defeated a boolean guard and stole initial
+  // focus from the top of the document (breaking the skip link's first-Tab position).
+  const previous = useRef<string | null>(null);
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    const changed = previous.current !== null && previous.current !== pathname;
+    previous.current = pathname;
+    if (!changed) return;
     const heading = document.querySelector<HTMLElement>("h1, h2, h3");
     if (!heading) return;
     if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
