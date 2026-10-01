@@ -1,5 +1,6 @@
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { CalibPoint } from "@/lib/fixtures/trust";
 
 import { CalibrationChart } from "./calibration-chart";
 
@@ -17,7 +18,24 @@ function CalibSkeleton() {
   );
 }
 
-export function CalibrationSection({ loading }: { loading: boolean }) {
+/** The curve point at (or nearest below) 0.80 predicted — the worked example in the callout. */
+function calloutPoint(calib: CalibPoint[]): CalibPoint | undefined {
+  return (
+    calib.find(([p]) => Math.abs(p - 0.8) < 1e-9) ??
+    [...calib].sort((a, b) => Math.abs(a[0] - 0.8) - Math.abs(b[0] - 0.8))[0]
+  );
+}
+
+/** Mean |predicted − measured| across buckets (unweighted — the wire carries no bucket sizes). */
+function meanGap(calib: CalibPoint[]): number {
+  return calib.reduce((sum, [p, e]) => sum + Math.abs(p - e), 0) / calib.length;
+}
+
+export function CalibrationSection({
+  loading,
+  calib,
+}: Readonly<{ loading: boolean; calib: CalibPoint[] }>) {
+  const callout = calloutPoint(calib);
   return (
     <section className="trust-sec">
       <p className="sec-eyebrow">
@@ -34,24 +52,30 @@ export function CalibrationSection({ loading }: { loading: boolean }) {
       ) : (
         <div className="calib-grid">
           <div className="calib-card">
-            <CalibrationChart />
+            <CalibrationChart calib={calib} />
           </div>
           <div>
-            <div className="calib-callout-box">
-              <div className="calib-callout-eq">0.80 predicted → 0.76 actual</div>
-              <div className="calib-callout-t">
-                For location, a guess the model rates 0.80 turns out right about 76% of the time.
-                The dashed line is perfect calibration; our curve sits just under it — slightly
-                humble, never overconfident.
+            {callout && (
+              <div className="calib-callout-box">
+                <div className="calib-callout-eq">
+                  {callout[0].toFixed(2)} predicted → {callout[1].toFixed(2)} actual
+                </div>
+                <div className="calib-callout-t">
+                  A guess the model rates {callout[0].toFixed(2)} turns out right about{" "}
+                  {Math.round(callout[1] * 100)}% of the time. The dashed line is perfect
+                  calibration; a curve just under it is slightly humble, never overconfident.
+                </div>
               </div>
-            </div>
-            <div className="calib-ece">
-              <span className="calib-ece-v">0.04</span>
-              <span className="calib-ece-l">
-                Expected calibration error across attributes. The closer the curve hugs the
-                diagonal, the lower this is.
-              </span>
-            </div>
+            )}
+            {calib.length > 0 && (
+              <div className="calib-ece">
+                <span className="calib-ece-v">{meanGap(calib).toFixed(2)}</span>
+                <span className="calib-ece-l">
+                  Mean gap between predicted and measured across buckets. The closer the curve hugs
+                  the diagonal, the lower this is.
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}
