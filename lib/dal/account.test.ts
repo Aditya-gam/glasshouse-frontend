@@ -11,7 +11,7 @@ const { getToken } = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ getToken }) }));
 
-import { getAccountConsents, grantConsent } from "./account";
+import { getAccount, grantConsent } from "./account";
 import { BackendError } from "./backend";
 
 const BASE = "http://localhost:8000";
@@ -28,7 +28,7 @@ const WIRE_ACCOUNT = {
   connected_accounts: [],
 };
 
-describe("getAccountConsents", () => {
+describe("getAccount", () => {
   it("maps the wire account to the UI shape — snake→camel, nulls become absent keys", async () => {
     let auth: string | null = null;
     server.use(
@@ -38,7 +38,7 @@ describe("getAccountConsents", () => {
       }),
     );
 
-    const account = await getAccountConsents();
+    const account = await getAccount();
 
     expect(auth).toBe("Bearer test-jwt");
     expect(account).toEqual({
@@ -47,6 +47,7 @@ describe("getAccountConsents", () => {
       decoy: { granted: false },
       retention: "retain",
       currentPolicyVersion: "2026-10-11",
+      connectedAccounts: [],
     });
     expect(account.art9).not.toHaveProperty("policyVersion");
   });
@@ -60,7 +61,7 @@ describe("getAccountConsents", () => {
         ),
       ),
     );
-    await expect(getAccountConsents()).rejects.toMatchObject({ status: 501 });
+    await expect(getAccount()).rejects.toMatchObject({ status: 501 });
   });
 });
 

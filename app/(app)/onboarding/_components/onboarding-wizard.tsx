@@ -28,9 +28,11 @@ interface OnboardingWizardProps {
   policyVersion: string;
   /** The copy for that version, or null when this build has none (grant not offered). */
   policy: ConsentPolicy | null;
+  /** False = demo (backend absent): the grant stays local and says so. */
+  live: boolean;
 }
 
-export function OnboardingWizard({ policyVersion, policy }: OnboardingWizardProps) {
+export function OnboardingWizard({ policyVersion, policy, live }: OnboardingWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [consents, setConsents] = useState(UNCHECKED);
@@ -58,6 +60,12 @@ export function OnboardingWizard({ policyVersion, policy }: OnboardingWizardProp
 
   const confirmConsent = () => {
     setGrantError(null);
+    // Demo mode never touches the network: acknowledge locally, honestly labeled.
+    if (!live) {
+      setRecorded({ live: false, art9Granted: consents.art9, art9Error: false, at: Date.now() });
+      setStep(2);
+      return;
+    }
     startTransition(async () => {
       const result = await grantConsents({ policyVersion, art9: consents.art9 });
       if (result.ok) {

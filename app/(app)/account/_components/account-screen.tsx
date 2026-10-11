@@ -1,7 +1,9 @@
 "use client";
 
+import { useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Breadcrumb } from "@/components/app-shell/breadcrumb";
@@ -18,20 +20,48 @@ import {
 } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { Switch } from "@/components/ui/switch";
-import { CONNECTED_ACCOUNTS, type ConnectedAccount } from "@/lib/fixtures/account";
+import type { ConnectedAccount } from "@/lib/fixtures/account";
+import type { AccountInfo, ConsentPurpose, Retention } from "@/lib/schemas/account";
 
+import {
+  eraseAccountAction,
+  exportRunStatusAction,
+  requestExportAction,
+  updateConsentAction,
+  updateRetentionAction,
+} from "../actions";
 import { SafetySection } from "./safety-section";
 
 import "../account.css";
 
-type ConsentKey = "purpose" | "art9";
-type Retention = "retain" | "discard";
-type AccountDialog = "revoke-purpose" | "revoke-art9" | "decoy" | "delete" | null;
+type AccountDialog = "revoke-self_audit" | "revoke-art9_inference" | "decoy" | "delete" | null;
+
+/** The exact phrase the delete confirmation requires (D5: a TYPED confirmation). */
+export const DELETE_PHRASE = "delete my account";
+
+const EXPORT_POLL_MS = 3000;
+const EXPORT_POLL_MAX = 60; // ~3 minutes at the default interval, then re-request
 
 const RETENTION: { key: Retention; label: string }[] = [
   { key: "retain", label: "Retain, encrypted" },
   { key: "discard", label: "Process, then discard" },
 ];
+
+type ConsentStateKey = "selfAudit" | "art9" | "decoy";
+const PURPOSE_KEYS: Record<ConsentPurpose, ConsentStateKey> = {
+  self_audit: "selfAudit",
+  art9_inference: "art9",
+  decoy: "decoy",
+};
+
+interface AccountScreenProps {
+  account: AccountInfo;
+  connections: ConnectedAccount[];
+  /** False = demo fixtures (backend absent): mutations stay local and say so. */
+  live: boolean;
+  /** Export-run poll interval; overridden only by tests. */
+  exportPollMs?: number;
+}
 
 function RetentionDesc({ retention }: { retention: Retention }) {
   if (retention === "retain") {
@@ -50,43 +80,208 @@ function RetentionDesc({ retention }: { retention: Retention }) {
   );
 }
 
-export function AccountScreen() {
+function grantedMeta(state: AccountInfo["selfAudit"]): string | null {
+  if (!state.granted) return null;
+  if (!state.grantedAt) return "Granted";
+  try {
+    const date = new Intl.DateTimeFormat("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(state.grantedAt));
+    return `Granted ${date}`;
+  } catch {
+    return "Granted";
+  }
+}
+
+type ExportState =
+  | { phase: "idle" }
+  | { phase: "preparing"; runId: string }
+  | { phase: "ready"; runId: string }
+  | { phase: "failed" };
+
+export function AccountScreen({
+  account: initial,
+  connections,
+  live,
+  exportPollMs = EXPORT_POLL_MS,
+}: AccountScreenProps) {
   const { lens } = useLens();
-  const [consents, setConsents] = useState({ purpose: true, art9: true, decoy: false });
-  const [retention, setRetention] = useState<Retention>("retain");
-  const [accounts, setAccounts] = useState<ConnectedAccount[]>(CONNECTED_ACCOUNTS);
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  const router = useRouter();
+  const [account, setAccount] = useState(initial);
+  const [accounts, setAccounts] = useState<ConnectedAccount[]>(connections);
   const [dialog, setDialog] = useState<AccountDialog>(null);
-  const [delAck, setDelAck] = useState(false);
+  const [deleteTyped, setDeleteTyped] = useState("");
+  const [exportState, setExportState] = useState<ExportState>({ phase: "idle" });
+  const [identityError, setIdentityError] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const pollCount = useRef(0);
 
-  const setRet = (k: Retention) => {
-    setRetention(k);
-    toast(k === "retain" ? "Retention: keep encrypted" : "Retention: process, then discard");
-  };
+  // A router.refresh() (e.g. after a stale policy version) re-renders the server page
+  // with fresh data — adopt it instead of keeping pre-refresh client state. (The
+  // render-phase "adjust state when a prop changes" pattern, not an effect.)
+  const [adoptedInitial, setAdoptedInitial] = useState(initial);
+  if (adoptedInitial !== initial) {
+    setAdoptedInitial(initial);
+    setAccount(initial);
+  }
 
-  const toggleConsent = (key: ConsentKey) => {
-    if (consents[key]) {
-      setDialog(`revoke-${key}`);
+  // Poll the export run (D2: exports are runs) until the bundle is downloadable.
+  useEffect(() => {
+    if (exportState.phase !== "preparing") return;
+    const { runId } = exportState;
+    const timer = setInterval(async () => {
+      pollCount.current += 1;
+      if (pollCount.current > EXPORT_POLL_MAX) {
+        setExportState({ phase: "failed" });
+        return;
+      }
+      const result = await exportRunStatusAction({ runId });
+      if (!result.ok) return; // transient — keep polling until the cap
+      if (result.status === "succeeded") setExportState({ phase: "ready", runId });
+      else if (result.status === "failed") setExportState({ phase: "failed" });
+    }, exportPollMs);
+    return () => clearInterval(timer);
+  }, [exportState, exportPollMs]);
+
+  const localConsentMerge = (purpose: ConsentPurpose, grant: boolean) =>
+    setAccount((a) => ({ ...a, [PURPOSE_KEYS[purpose]]: { granted: grant } }));
+
+  const applyConsent = (purpose: ConsentPurpose, grant: boolean, label: string) => {
+    // Demo mode never touches the network: acknowledge locally and say so.
+    if (!live) {
+      localConsentMerge(purpose, grant);
+      setDialog(null);
+      toast(
+        grant
+          ? `${label} consent granted (demo — nothing stored)`
+          : `${label} consent revoked (demo — nothing stored)`,
+      );
       return;
     }
-    setConsents((c) => ({ ...c, [key]: true }));
-    toast("Consent granted");
+    startTransition(async () => {
+      const result = await updateConsentAction({
+        purpose,
+        grant,
+        ...(grant ? { policyVersion: account.currentPolicyVersion } : {}),
+      });
+      if (!result.ok) {
+        if (result.code === "stale_policy") {
+          toast.error("The consent terms changed — the page has refreshed; please try again.");
+          setDialog(null);
+          router.refresh(); // re-reads the account; the effect above adopts the new version
+        } else {
+          toast.error(`We couldn't update the ${label} consent — nothing changed. Try again.`);
+        }
+        return;
+      }
+      if (result.account) setAccount(result.account);
+      else localConsentMerge(purpose, grant); // committed; the re-read failed (rare)
+      toast(
+        grant
+          ? `${label} consent granted`
+          : `${label} consent revoked — processing stops; your data stays until you delete it`,
+      );
+      setDialog(null);
+    });
   };
-  const toggleDecoy = () => {
-    if (!consents.decoy) {
-      setDialog("decoy");
+
+  const setRet = (key: Retention) => {
+    if (key === account.retention) return;
+    const label =
+      key === "retain" ? "Retention: keep encrypted" : "Retention: process, then discard";
+    if (!live) {
+      setAccount((a) => ({ ...a, retention: key }));
+      toast(`${label} (demo — nothing stored)`);
       return;
     }
-    setConsents((c) => ({ ...c, decoy: false }));
-    toast("Decoy mode turned off");
+    startTransition(async () => {
+      const result = await updateRetentionAction({ retention: key });
+      if (!result.ok) {
+        toast.error("We couldn't change retention — nothing changed. Try again.");
+        return;
+      }
+      setAccount(result.account ?? { ...account, retention: key });
+      toast(label);
+    });
   };
-  const confirmRevoke = (key: ConsentKey) => {
-    setConsents((c) => ({ ...c, [key]: false }));
-    setDialog(null);
-    toast(`${key === "purpose" ? "Purpose" : "Article 9"} consent revoked`);
+
+  const requestBundle = () => {
+    if (!live) {
+      toast("Export requested (demo — nothing stored, no bundle is prepared)");
+      return;
+    }
+    startTransition(async () => {
+      const result = await requestExportAction();
+      if (!result.ok) {
+        toast.error("We couldn't start the export — try again.");
+        return;
+      }
+      if (result.runId) {
+        pollCount.current = 0;
+        setExportState({ phase: "preparing", runId: result.runId });
+        toast("Preparing your bundle — the download appears here when it's ready");
+      } else {
+        toast("Export requested (demo — nothing stored)");
+      }
+    });
   };
-  const revokeAccount = (id: string) => {
+
+  const confirmDelete = () => {
+    setIdentityError(false);
+    if (!live) {
+      setDialog(null);
+      toast("Account deletion acknowledged (demo — nothing stored, nothing deleted)");
+      return;
+    }
+    // D5 needs BOTH steps; refuse to start an erasure we can't finish.
+    if (!user) {
+      toast.error("Your sign-in session isn't ready — reload the page and try again.");
+      return;
+    }
+    const clerkUser = user;
+    startTransition(async () => {
+      const result = await eraseAccountAction();
+      if (!result.ok) {
+        toast.error("Deletion failed — nothing was removed. Try again.");
+        return;
+      }
+      // D5 step 2: our data is erased (204); remove the Clerk identity, then sign out.
+      try {
+        await clerkUser.delete();
+      } catch {
+        // No false success: the data is gone, the sign-in identity is not.
+        setIdentityError(true);
+        setDialog(null);
+        return;
+      }
+      try {
+        await signOut({ redirectUrl: "/" });
+      } catch {
+        // Identity IS deleted; the session is dead either way — leave the app.
+        router.push("/");
+      }
+    });
+  };
+
+  const revokeConnection = (id: string) => {
+    // Demo-only affordance: connector revocation ships with M6.
     setAccounts((a) => a.filter((x) => x.id !== id));
-    toast("Disconnected — encrypted token cleared");
+    toast("Disconnected (demo — nothing stored)");
+  };
+
+  const toggleConsent = (purpose: Exclude<ConsentPurpose, "decoy">) => {
+    const state = purpose === "self_audit" ? account.selfAudit : account.art9;
+    if (state.granted) setDialog(`revoke-${purpose}`);
+    else applyConsent(purpose, true, purpose === "self_audit" ? "Self-audit" : "Article 9");
+  };
+
+  const toggleDecoy = () => {
+    if (!account.decoy.granted) setDialog("decoy");
+    else applyConsent("decoy", false, "Decoy-mode");
   };
 
   return (
@@ -105,6 +300,12 @@ export function AccountScreen() {
         <p className="account-sub">
           Everything we hold is yours to see, change, export, or erase. Nothing here is hidden.
         </p>
+        {!live && (
+          <p className="demo-banner" role="status">
+            <Icon name="circle-minus" size={14} /> Demo data — the backend isn&rsquo;t connected, so
+            nothing on this screen is stored or real.
+          </p>
+        )}
 
         {lens === "atrisk" && (
           <div className="sec safety-sec" id="safety" style={{ marginTop: "var(--space-6)" }}>
@@ -120,8 +321,8 @@ export function AccountScreen() {
             <h2>Consents</h2>
           </div>
           <p className="sec-desc">
-            What you&rsquo;ve agreed to. Revoke anytime — revoking the purpose consent stops all
-            processing.
+            What you&rsquo;ve agreed to. Revoke anytime — revoking stops processing; it does not
+            delete data (deletion is below).
           </p>
           <div className="sec-card">
             <div className="row">
@@ -131,7 +332,7 @@ export function AccountScreen() {
               <div className="row-body">
                 <div className="row-name">
                   Self-audit purpose{" "}
-                  {consents.purpose ? (
+                  {account.selfAudit.granted ? (
                     <span className="status-pill status-on">Granted</span>
                   ) : (
                     <span className="status-pill status-off">Revoked</span>
@@ -140,12 +341,15 @@ export function AccountScreen() {
                 <div className="row-desc">
                   Process your footprint to reveal what others can infer about you.
                 </div>
-                {consents.purpose && <div className="row-meta">Granted 25 Jun 2026</div>}
+                {grantedMeta(account.selfAudit) && (
+                  <div className="row-meta">{grantedMeta(account.selfAudit)}</div>
+                )}
               </div>
               <div className="row-action">
                 <Switch
-                  checked={consents.purpose}
-                  onCheckedChange={() => toggleConsent("purpose")}
+                  checked={account.selfAudit.granted}
+                  disabled={pending}
+                  onCheckedChange={() => toggleConsent("self_audit")}
                   aria-label="Self-audit purpose consent"
                 />
               </div>
@@ -162,12 +366,15 @@ export function AccountScreen() {
                   Explicit consent to process data that may reveal special categories — e.g.
                   birthplace.
                 </div>
-                {consents.art9 && <div className="row-meta">Granted 25 Jun 2026</div>}
+                {grantedMeta(account.art9) && (
+                  <div className="row-meta">{grantedMeta(account.art9)}</div>
+                )}
               </div>
               <div className="row-action">
                 <Switch
-                  checked={consents.art9}
-                  onCheckedChange={() => toggleConsent("art9")}
+                  checked={account.art9.granted}
+                  disabled={pending}
+                  onCheckedChange={() => toggleConsent("art9_inference")}
                   aria-label="Special-category data consent"
                 />
               </div>
@@ -179,7 +386,7 @@ export function AccountScreen() {
               <div className="row-body">
                 <div className="row-name">
                   Decoy mode{" "}
-                  {consents.decoy ? (
+                  {account.decoy.granted ? (
                     <span className="status-pill status-on">On</span>
                   ) : (
                     <span className="status-pill status-off">Off</span>
@@ -192,7 +399,8 @@ export function AccountScreen() {
               </div>
               <div className="row-action">
                 <Switch
-                  checked={consents.decoy}
+                  checked={account.decoy.granted}
+                  disabled={pending}
                   onCheckedChange={toggleDecoy}
                   aria-label="Decoy mode"
                 />
@@ -216,16 +424,17 @@ export function AccountScreen() {
                   <button
                     key={r.key}
                     type="button"
-                    className={"seg-btn" + (retention === r.key ? " seg-btn--active" : "")}
+                    className={"seg-btn" + (account.retention === r.key ? " seg-btn--active" : "")}
                     role="radio"
-                    aria-checked={retention === r.key}
+                    aria-checked={account.retention === r.key}
+                    disabled={pending}
                     onClick={() => setRet(r.key)}
                   >
                     {r.label}
                   </button>
                 ))}
               </div>
-              <RetentionDesc retention={retention} />
+              <RetentionDesc retention={account.retention} />
             </div>
           </div>
         </section>
@@ -238,7 +447,10 @@ export function AccountScreen() {
             <h2>Connected accounts</h2>
           </div>
           <p className="sec-desc">
-            Read-only connections. Revoking clears the encrypted token immediately.
+            Read-only connections.{" "}
+            {live
+              ? "Managing connections arrives with the connector update."
+              : "Revoking clears the encrypted token immediately."}
           </p>
           <div className="sec-card">
             {accounts.length === 0 && (
@@ -259,19 +471,24 @@ export function AccountScreen() {
                 </span>
                 <div className="row-body">
                   <div className="row-name">
-                    {a.name} <span className="status-pill status-on">Read-only</span>
+                    {a.name}{" "}
+                    <span className="status-pill status-on">{a.status ?? "Read-only"}</span>
                   </div>
                   <div className="row-desc">{a.handle}</div>
-                  <div className="row-meta">{a.date}</div>
+                  {a.date && <div className="row-meta">{a.date}</div>}
                 </div>
                 <div className="row-action">
-                  <button
-                    type="button"
-                    className="link-btn link-btn--danger"
-                    onClick={() => revokeAccount(a.id)}
-                  >
-                    Revoke access
-                  </button>
+                  {live ? (
+                    <span className="row-meta">Managed in Connect</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="link-btn link-btn--danger"
+                      onClick={() => revokeConnection(a.id)}
+                    >
+                      Revoke access
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -302,12 +519,28 @@ export function AccountScreen() {
                   <li>Every inference, with evidence and calibrated reliability</li>
                   <li>Your consents and the audit log</li>
                 </ul>
+                {exportState.phase === "preparing" && (
+                  <p className="row-meta" role="status">
+                    Preparing your bundle… the download link appears here when it&rsquo;s ready.
+                  </p>
+                )}
+                {exportState.phase === "ready" && (
+                  <p className="row-meta" role="status">
+                    Your bundle is ready:{" "}
+                    <a className="link-btn" href={`/api/export/${exportState.runId}`} download>
+                      download it
+                    </a>{" "}
+                    (owner-only link, expires).
+                  </p>
+                )}
+                {exportState.phase === "failed" && (
+                  <p className="row-meta" role="status">
+                    The export didn&rsquo;t finish — request it again.
+                  </p>
+                )}
               </div>
-              <Button
-                variant="secondary"
-                onClick={() => toast("Preparing your data bundle — we'll email a secure link")}
-              >
-                <Icon name="download" size={15} /> Download bundle
+              <Button variant="secondary" disabled={pending} onClick={requestBundle}>
+                <Icon name="download" size={15} /> Request bundle
               </Button>
             </div>
           </div>
@@ -359,10 +592,20 @@ export function AccountScreen() {
                   not what&rsquo;s already out in the world.
                 </span>
               </div>
+              {identityError && (
+                <div className="danger-caveat" role="alert">
+                  <Icon name="shield-alert" size={16} />
+                  <span>
+                    <b>Your data is erased, but your sign-in wasn&rsquo;t removed.</b> The deletion
+                    of your encrypted data and key succeeded; removing the sign-in identity failed.
+                    Sign out and remove the sign-in from your identity provider.
+                  </span>
+                </div>
+              )}
               <Button
                 className="btn-danger"
                 onClick={() => {
-                  setDelAck(false);
+                  setDeleteTyped("");
                   setDialog("delete");
                 }}
               >
@@ -373,17 +616,17 @@ export function AccountScreen() {
         </section>
       </main>
 
-      {/* Revoke purpose / art9 */}
+      {/* Revoke self_audit / art9 */}
       <Dialog
-        open={dialog === "revoke-purpose" || dialog === "revoke-art9"}
+        open={dialog === "revoke-self_audit" || dialog === "revoke-art9_inference"}
         onOpenChange={(open) => {
-          if (!open) setDialog(null);
+          if (!open && !pending) setDialog(null);
         }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {dialog === "revoke-art9"
+              {dialog === "revoke-art9_inference"
                 ? "Revoke special-category consent?"
                 : "Revoke the self-audit consent?"}
             </DialogTitle>
@@ -397,19 +640,26 @@ export function AccountScreen() {
               color: "var(--muted-foreground)",
             }}
           >
-            {dialog === "revoke-art9"
-              ? "We'll stop processing data that may reveal special categories (like birthplace). Existing findings for those attributes are removed."
-              : "This stops all processing immediately. Your audit pauses and we won't run further inference until you grant it again."}
+            {dialog === "revoke-art9_inference"
+              ? "We'll stop processing data that may reveal special categories (like birthplace), and existing special-category findings are sealed from view. Revoking does not delete data — deletion is the separate step below."
+              : "This stops all processing immediately. Your audit pauses and we won't run further inference until you grant it again. Revoking does not delete data — deletion is the separate step below."}
           </p>
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setDialog(null)}>
+            <Button variant="secondary" disabled={pending} onClick={() => setDialog(null)}>
               Keep it
             </Button>
             <Button
               className="btn-warn"
-              onClick={() => confirmRevoke(dialog === "revoke-art9" ? "art9" : "purpose")}
+              disabled={pending}
+              onClick={() =>
+                applyConsent(
+                  dialog === "revoke-art9_inference" ? "art9_inference" : "self_audit",
+                  false,
+                  dialog === "revoke-art9_inference" ? "Article 9" : "Self-audit",
+                )
+              }
             >
-              Revoke
+              {pending ? "Revoking…" : "Revoke"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -419,7 +669,7 @@ export function AccountScreen() {
       <Dialog
         open={dialog === "decoy"}
         onOpenChange={(open) => {
-          if (!open) setDialog(null);
+          if (!open && !pending) setDialog(null);
         }}
       >
         <DialogContent>
@@ -442,28 +692,25 @@ export function AccountScreen() {
             decoy text appears.
           </p>
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setDialog(null)}>
+            <Button variant="secondary" disabled={pending} onClick={() => setDialog(null)}>
               Cancel
             </Button>
             <Button
               className="btn-warn"
-              onClick={() => {
-                setConsents((c) => ({ ...c, decoy: true }));
-                setDialog(null);
-                toast("Decoy mode on — you'll confirm again each use");
-              }}
+              disabled={pending}
+              onClick={() => applyConsent("decoy", true, "Decoy-mode")}
             >
-              Turn on decoy mode
+              {pending ? "Turning on…" : "Turn on decoy mode"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirm */}
+      {/* Delete confirm — a TYPED confirmation (D5) */}
       <Dialog
         open={dialog === "delete"}
         onOpenChange={(open) => {
-          if (!open) setDialog(null);
+          if (!open && !pending) setDialog(null);
         }}
       >
         <DialogContent>
@@ -479,32 +726,32 @@ export function AccountScreen() {
               color: "var(--muted-foreground)",
             }}
           >
-            We&rsquo;ll crypto-shred your key and cascade-delete everything we hold. We can&rsquo;t
-            recall copies others already made.
+            We&rsquo;ll crypto-shred your key and cascade-delete everything we hold, then remove
+            your sign-in and sign you out. We can&rsquo;t recall copies others already made.
           </p>
           <div className="del-confirm">
-            <Switch
-              checked={delAck}
-              onCheckedChange={() => setDelAck((v) => !v)}
-              aria-label="Acknowledge permanent deletion"
+            <label className="del-confirm-t" htmlFor="delete-phrase">
+              Type <b>{DELETE_PHRASE}</b> to confirm:
+            </label>
+            <input
+              id="delete-phrase"
+              className="del-confirm-input"
+              type="text"
+              autoComplete="off"
+              value={deleteTyped}
+              onChange={(e) => setDeleteTyped(e.target.value)}
             />
-            <span className="del-confirm-t">
-              I understand this is permanent and can&rsquo;t recall copies others have already made.
-            </span>
           </div>
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setDialog(null)}>
+            <Button variant="secondary" disabled={pending} onClick={() => setDialog(null)}>
               Cancel
             </Button>
             <Button
               className="btn-danger"
-              disabled={!delAck}
-              onClick={() => {
-                setDialog(null);
-                toast("Account scheduled for deletion — your key is being shredded");
-              }}
+              disabled={deleteTyped.trim().toLowerCase() !== DELETE_PHRASE || pending}
+              onClick={confirmDelete}
             >
-              Permanently delete
+              {pending ? "Deleting…" : "Permanently delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

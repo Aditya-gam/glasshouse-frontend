@@ -4,6 +4,9 @@ import { z } from "zod";
 export const consentPurposeSchema = z.enum(["self_audit", "art9_inference", "decoy"]);
 export type ConsentPurpose = z.infer<typeof consentPurposeSchema>;
 
+export const retentionSchema = z.enum(["retain", "discard"]);
+export type Retention = z.infer<typeof retentionSchema>;
+
 export const consentStateSchema = z.object({
   granted: z.boolean(),
   /** ISO timestamp of the grant; absent when never granted. */
@@ -13,16 +16,22 @@ export const consentStateSchema = z.object({
 });
 export type ConsentState = z.infer<typeof consentStateSchema>;
 
-/**
- * The account's consent standing — the minimal DTO F1 needs (mirrors `AccountRead`
- * minus connected accounts, which the Account screen adds in F3).
- */
-export const accountConsentsSchema = z.object({
+export const connectedAccountSchema = z.object({
+  id: z.uuid(),
+  platform: z.string(),
+  handle: z.string().optional(),
+  status: z.string(),
+});
+export type ConnectedAccountInfo = z.infer<typeof connectedAccountSchema>;
+
+/** The account as the UI consumes it — consent standing, retention, connections. */
+export const accountSchema = z.object({
   selfAudit: consentStateSchema,
   art9: consentStateSchema,
   decoy: consentStateSchema,
-  retention: z.enum(["retain", "discard"]),
+  retention: retentionSchema,
   /** The consent-text version the backend currently requires grants against (WC.1). */
   currentPolicyVersion: z.string(),
+  connectedAccounts: z.array(connectedAccountSchema),
 });
-export type AccountConsents = z.infer<typeof accountConsentsSchema>;
+export type AccountInfo = z.infer<typeof accountSchema>;

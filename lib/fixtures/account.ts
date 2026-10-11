@@ -5,7 +5,10 @@ export interface ConnectedAccount {
   icon: IconName;
   name: string;
   handle: string;
-  date: string;
+  /** Human "Connected …" line; absent for live connections (the wire has no date yet). */
+  date?: string;
+  /** The connection's wire status; the demo fixtures are healthy read-only links. */
+  status?: string;
 }
 
 export const CONNECTED_ACCOUNTS: ConnectedAccount[] = [
