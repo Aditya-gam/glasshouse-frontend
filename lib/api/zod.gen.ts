@@ -30,9 +30,18 @@ export const zBenchmarkRead = z.object({
 });
 
 /**
+ * Body_create_import_v1_imports_post
+ */
+export const zBodyCreateImportV1ImportsPost = z.object({
+    files: z.array(z.string()),
+    platform: z.enum(['reddit', 'x'])
+});
+
+/**
  * Candidate
  */
 export const zCandidate = z.object({
+    id: z.string(),
     label: z.string(),
     note: z.string(),
     rank: z.int()
@@ -69,12 +78,43 @@ export const zConnectorStart = z.object({
 });
 
 /**
+ * ConsentGrant
+ *
+ * POST /v1/account/consents — grant one purpose for the CURRENT policy version.
+ *
+ * `policy_version` must equal the account's `current_policy_version`; a grant against a stale
+ * version (the policy changed since the screen was shown) is refused 409, so the stored consent
+ * records the exact text the user agreed to (GDPR Art. 7(1) / Art. 9). Revoke is a path DELETE.
+ */
+export const zConsentGrant = z.object({
+    policy_version: z.string(),
+    purpose: z.enum([
+        'self_audit',
+        'art9_inference',
+        'decoy'
+    ])
+});
+
+/**
+ * ConsentState
+ *
+ * One purpose's consent: whether it is granted, and (if so) its policy version + grant time.
+ */
+export const zConsentState = z.object({
+    granted: z.boolean(),
+    granted_at: z.iso.datetime().nullish(),
+    policy_version: z.string().nullish()
+});
+
+/**
  * ConsentRead
+ *
+ * The caller's standing consent, one `ConsentState` per purpose (write-paths D4).
  */
 export const zConsentRead = z.object({
-    art9: z.boolean(),
-    decoy: z.boolean(),
-    purpose: z.boolean()
+    art9_inference: zConsentState,
+    decoy: zConsentState,
+    self_audit: zConsentState
 });
 
 /**
@@ -83,16 +123,8 @@ export const zConsentRead = z.object({
 export const zAccountRead = z.object({
     connected_accounts: z.array(zConnectedAccountRead),
     consents: zConsentRead,
+    current_policy_version: z.string(),
     retention: z.enum(['retain', 'discard'])
-});
-
-/**
- * ConsentUpdate
- */
-export const zConsentUpdate = z.object({
-    decoy: z.boolean().optional().default(false),
-    purpose: z.string(),
-    special_category: z.boolean().optional().default(false)
 });
 
 /**
@@ -171,24 +203,51 @@ export const zEvidenceRead = z.object({
 
 /**
  * ImportRead
+ *
+ * An import source + its ingestion run; status is the run's, counts land when it finishes.
  */
 export const zImportRead = z.object({
     created_at: z.iso.datetime().nullish(),
-    dropped: z.int().nullish(),
+    dropped_count: z.int().nullish(),
     id: z.uuid(),
-    kept: z.int().nullish(),
+    kept_count: z.int().nullish(),
     platform: z.string().nullish(),
+    run_id: z.uuid().nullish(),
     status: z.string()
+});
+
+/**
+ * ImportPage
+ *
+ * A cursor page of imports, newest first; `next_cursor` is null on the last page (opaque).
+ */
+export const zImportPage = z.object({
+    items: z.array(zImportRead),
+    next_cursor: z.string().nullish()
 });
 
 /**
  * InferenceConfirm
  *
- * POST /v1/inferences/{id}/confirm — the user confirms/denies (a live ground-truth signal).
+ * POST /v1/inferences/{id}/confirm — confirm/deny a ranked candidate (a ground-truth signal).
+ *
+ * Takes the candidate **id**, never its value (write-paths D7): a special-category value is never
+ * sent back to the server or stored a second time. The candidate is scoped to the path inference.
  */
 export const zInferenceConfirm = z.object({
+    candidate_id: z.uuid(),
+    confirmed: z.boolean()
+});
+
+/**
+ * InferenceConfirmRead
+ *
+ * Echo of the stored feedback (upserted into `inference_feedback`).
+ */
+export const zInferenceConfirmRead = z.object({
+    candidate_id: z.uuid(),
     confirmed: z.boolean(),
-    value: z.string()
+    inference_id: z.uuid()
 });
 
 /**
@@ -311,7 +370,7 @@ export const zRunCreate = z.object({
 /**
  * RunStatus
  *
- * Poll response for a run.
+ * Poll response for a run. `type` ∈ attack | eval | remediation | ingestion | export.
  */
 export const zRunStatus = z.object({
     engine_version: z.string().nullish(),
@@ -415,7 +474,7 @@ export const zEraseAccountV1AccountDeleteHeaders = z.object({
 /**
  * Successful Response
  */
-export const zEraseAccountV1AccountDeleteResponse = zRunAccepted;
+export const zEraseAccountV1AccountDeleteResponse = z.void();
 
 export const zGetAccountV1AccountGetHeaders = z.object({
     'x-dev-user-id': z.uuid().nullish()
@@ -426,18 +485,7 @@ export const zGetAccountV1AccountGetHeaders = z.object({
  */
 export const zGetAccountV1AccountGetResponse = zAccountRead;
 
-export const zRevokeConsentV1AccountConsentsDeleteBody = zConsentUpdate;
-
-export const zRevokeConsentV1AccountConsentsDeleteHeaders = z.object({
-    'x-dev-user-id': z.uuid().nullish()
-});
-
-/**
- * Successful Response
- */
-export const zRevokeConsentV1AccountConsentsDeleteResponse = zConsentRead;
-
-export const zGrantConsentV1AccountConsentsPostBody = zConsentUpdate;
+export const zGrantConsentV1AccountConsentsPostBody = zConsentGrant;
 
 export const zGrantConsentV1AccountConsentsPostHeaders = z.object({
     'x-dev-user-id': z.uuid().nullish()
@@ -446,7 +494,24 @@ export const zGrantConsentV1AccountConsentsPostHeaders = z.object({
 /**
  * Successful Response
  */
-export const zGrantConsentV1AccountConsentsPostResponse = zConsentRead;
+export const zGrantConsentV1AccountConsentsPostResponse = zAccountRead;
+
+export const zRevokeConsentV1AccountConsentsPurposeDeleteHeaders = z.object({
+    'x-dev-user-id': z.uuid().nullish()
+});
+
+export const zRevokeConsentV1AccountConsentsPurposeDeletePath = z.object({
+    purpose: z.enum([
+        'self_audit',
+        'art9_inference',
+        'decoy'
+    ])
+});
+
+/**
+ * Successful Response
+ */
+export const zRevokeConsentV1AccountConsentsPurposeDeleteResponse = z.void();
 
 export const zExportAccountV1AccountExportPostHeaders = z.object({
     'x-dev-user-id': z.uuid().nullish()
@@ -456,6 +521,19 @@ export const zExportAccountV1AccountExportPostHeaders = z.object({
  * Successful Response
  */
 export const zExportAccountV1AccountExportPostResponse = zRunAccepted;
+
+export const zDownloadExportV1AccountExportRunIdGetHeaders = z.object({
+    'x-dev-user-id': z.uuid().nullish()
+});
+
+export const zDownloadExportV1AccountExportRunIdGetPath = z.object({
+    run_id: z.uuid()
+});
+
+/**
+ * the encrypted export bundle (owner only; expires)
+ */
+export const zDownloadExportV1AccountExportRunIdGetResponse = z.string();
 
 export const zSetRetentionV1AccountRetentionPutBody = zRetentionUpdate;
 
@@ -542,13 +620,14 @@ export const zListImportsV1ImportsGetHeaders = z.object({
 });
 
 /**
- * Response List Imports V1 Imports Get
- *
  * Successful Response
  */
-export const zListImportsV1ImportsGetResponse = z.array(zImportRead);
+export const zListImportsV1ImportsGetResponse = zImportPage;
+
+export const zCreateImportV1ImportsPostBody = zBodyCreateImportV1ImportsPost;
 
 export const zCreateImportV1ImportsPostHeaders = z.object({
+    'idempotency-key': z.string().nullish(),
     'x-dev-user-id': z.uuid().nullish()
 });
 
@@ -612,7 +691,7 @@ export const zConfirmInferenceV1InferencesInferenceIdConfirmPostPath = z.object(
 /**
  * Successful Response
  */
-export const zConfirmInferenceV1InferencesInferenceIdConfirmPostResponse = zAttributeFindingRead;
+export const zConfirmInferenceV1InferencesInferenceIdConfirmPostResponse = zInferenceConfirmRead;
 
 export const zCreateRemediationV1InferencesInferenceIdRemediationsPostBody = zRemediationCreate;
 

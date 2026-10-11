@@ -131,7 +131,7 @@ const WIRE_DETAIL = {
   precision: "city",
   neighborhood: null,
   reasoning: "Posts reference Pike Place and SEA timezone.",
-  candidates: [{ rank: 1, label: "Seattle, USA", note: "" }],
+  candidates: [{ id: "cand_1", rank: 1, label: "Seattle, USA", note: "" }],
   text_only_reliability: { point: 0.74, lo: 0.7, hi: 0.78 },
   evidence_items: [
     {
