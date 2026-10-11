@@ -1,3 +1,4 @@
+import { requireSelfAuditConsent } from "@/lib/data/consent";
 import { getAttributes } from "@/lib/data/attributes";
 
 import { Dashboard, type DashboardView } from "./_components/dashboard";
@@ -13,6 +14,7 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ state?: string }>;
 }) {
+  await requireSelfAuditConsent();
   const { state } = await searchParams;
   const attrs = await getAttributes();
   return <Dashboard attrs={attrs} initialState={normalizeState(state)} />;

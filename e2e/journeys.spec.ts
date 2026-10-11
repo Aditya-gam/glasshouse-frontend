@@ -17,16 +17,19 @@ test("dashboard → attribute detail; calibrated-not-raw + persona lens", async 
   await expect(page).toHaveURL(/\/attribute\/location/);
 });
 
-test("onboarding is consent-gated — no continue until consent is given", async ({ page }) => {
+test("onboarding is consent-gated — the two REQUIRED points gate, Art. 9 stays optional", async ({
+  page,
+}) => {
   await page.goto("/onboarding");
   await page.getByRole("button", { name: /Get started/ }).click(); // welcome → consent
-  const consents = page.getByRole("checkbox");
-  await expect(consents.first()).toBeVisible();
   const proceed = page.getByRole("button", { name: /I consent.*continue/i });
   await expect(proceed).toBeDisabled(); // no run without consent
-  const n = await consents.count();
-  for (let i = 0; i < n; i++) await consents.nth(i).click();
+  await page.getByRole("checkbox", { name: /auditing my own footprint/i }).click();
+  await expect(proceed).toBeDisabled(); // one required point is not enough
+  await page.getByRole("checkbox", { name: /can't recall existing copies/i }).click();
+  // Both required points confirmed; the OPTIONAL Art. 9 box is untouched (freely given).
   await expect(proceed).toBeEnabled();
+  await expect(page.getByRole("checkbox", { name: /special-category data/i })).not.toBeChecked();
 });
 
 test("connect drops third-party content (kept vs dropped is shown)", async ({ page }) => {

@@ -471,3 +471,16 @@
     flex-wrap: wrap;
   }
 }
+
+/* The "(optional)" marker on the Art. 9 consent row. */
+.consent-opt {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+/* Demo-mode note inside the recorded-consent box. */
+.recorded-demo-note {
+  margin: 6px 0 2px;
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+}
