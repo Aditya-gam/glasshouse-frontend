@@ -1,3 +1,4 @@
+import { requireSelfAuditConsent } from "@/lib/data/consent";
 import { getDefendSimulation } from "@/lib/data/defend";
 
 import { DefendView, type DefendViewState } from "./_components/defend-view";
@@ -20,6 +21,7 @@ export default async function DefendPage({
 }: {
   searchParams: Promise<{ state?: string; inference?: string }>;
 }) {
+  await requireSelfAuditConsent();
   const { state, inference } = await searchParams;
   const { target, options, decoyBackfire, liveStatus } = await getDefendSimulation(inference);
   // An explicit ?state= (the demo/E2E harness) wins; otherwise live data drives the state.

@@ -12,7 +12,9 @@ import { client } from "@/lib/api/client.gen";
  */
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-const DEV_USER_ID = process.env.DEV_USER_ID;
+// Dev-only impersonation header; a production build never honors it, so a stray env
+// var can't let an unauthenticated caller write as the dev user.
+const DEV_USER_ID = process.env.NODE_ENV === "production" ? undefined : process.env.DEV_USER_ID;
 
 // Point the generated client at the backend once — the base URL is static config.
 client.setConfig({ baseUrl: BASE_URL });

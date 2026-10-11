@@ -1,4 +1,5 @@
 import { getAttribution } from "@/lib/data/attribution";
+import { requireSelfAuditConsent } from "@/lib/data/consent";
 
 import { AttributionView, type AttributionViewState } from "./_components/attribution-view";
 
@@ -15,6 +16,7 @@ export default async function AttributionPage({
   params: Promise<{ code: string }>;
   searchParams: Promise<{ state?: string }>;
 }) {
+  await requireSelfAuditConsent();
   const { code } = await params;
   const { state } = await searchParams;
   const {

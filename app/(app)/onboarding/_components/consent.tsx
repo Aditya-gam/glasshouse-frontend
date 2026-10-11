@@ -1,13 +1,17 @@
 import type { ReactNode, RefObject } from "react";
 
+import { EmptyState } from "@/components/states/empty-state";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/ui/icon";
+import type { ConsentPolicy } from "@/lib/consent/policy";
 
 export type ConsentKey = "purpose" | "art9" | "noFalse";
 
 interface ConsentProps {
   headingRef: RefObject<HTMLHeadingElement | null>;
+  /** Null ⇒ this build has no text for the backend's current policy version. */
+  policy: ConsentPolicy | null;
   consents: Record<ConsentKey, boolean>;
   toggle: (key: ConsentKey) => void;
 }
@@ -26,26 +30,49 @@ function ConsentRow({
   checked,
   onToggle,
   title,
+  optional = false,
   children,
 }: {
   id: string;
   checked: boolean;
   onToggle: () => void;
   title: string;
+  optional?: boolean;
   children: ReactNode;
 }) {
   return (
     <div className="consent-row" data-checked={checked}>
       <Checkbox id={id} checked={checked} onCheckedChange={onToggle} />
       <label className="consent-text" htmlFor={id}>
-        <span className="consent-t">{title}</span>
+        <span className="consent-t">
+          {title}
+          {optional && <span className="consent-opt"> (optional)</span>}
+        </span>
         <span className="consent-d">{children}</span>
       </label>
     </div>
   );
 }
 
-export function Consent({ headingRef, consents, toggle }: ConsentProps) {
+export function Consent({ headingRef, policy, consents, toggle }: ConsentProps) {
+  if (policy === null) {
+    // WC.1: never offer a grant against text the user can't read.
+    return (
+      <div className="step-anim">
+        <p className="eyebrow">Your consent</p>
+        <h1 className="step-title" ref={headingRef} tabIndex={-1}>
+          Nothing runs until you agree
+        </h1>
+        <EmptyState
+          icon="circle-minus"
+          title="This app needs updating"
+          message="The consent terms were updated on the server, and this version of the app doesn't include their text yet. We won't ask you to agree to terms you can't read."
+          message2="Update or reload the app, then come back to this step."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="step-anim">
       <p className="eyebrow">Your consent</p>
@@ -53,49 +80,46 @@ export function Consent({ headingRef, consents, toggle }: ConsentProps) {
         Nothing runs until you agree
       </h1>
       <p className="lede">
-        We process your footprint only for this self-audit. Please confirm each point below.
+        We process your footprint only for this self-audit. Please confirm the two required points
+        below — the special-category consent is optional.
       </p>
       <dl className="kv">
-        <Kv k="Purpose">Self-audit — reveal what others can infer about you</Kv>
-        <Kv k="Data">Your own footprint, encrypted; content is never logged</Kv>
-        <Kv k="Withdraw">Anytime, from Account — we crypto-shred your data</Kv>
+        <Kv k="Purpose">{policy.kv.purpose}</Kv>
+        <Kv k="Data">{policy.kv.data}</Kv>
+        <Kv k="Withdraw">{policy.kv.withdraw}</Kv>
       </dl>
       <fieldset className="consents">
-        <legend className="sr-only">Required consents</legend>
+        <legend className="sr-only">Consents — two required, one optional</legend>
         <ConsentRow
           id="c-purpose"
           checked={consents.purpose}
           onToggle={() => toggle("purpose")}
-          title="I'm auditing my own footprint"
+          title={policy.selfAudit.title}
         >
-          I understand this processes data I control to show what others could infer about me.
+          {policy.selfAudit.body}
         </ConsentRow>
         <ConsentRow
           id="c-art9"
           checked={consents.art9}
           onToggle={() => toggle("art9")}
-          title="I explicitly consent to special-category data"
+          title={policy.art9.title}
+          optional
         >
-          Some inferences — like birthplace, which can relate to ethnic origin — fall under GDPR
-          Article 9. This consent is explicit and reversible.
+          {policy.art9.body} {policy.art9.declinedNote}
         </ConsentRow>
         <ConsentRow
           id="c-nofalse"
           checked={consents.noFalse}
           onToggle={() => toggle("noFalse")}
-          title="I understand this can't recall existing copies"
+          title={policy.noFalseSafety.title}
         >
-          Reducing exposure later can&rsquo;t pull back screenshots, archives, or reposts others
-          have already made.
+          {policy.noFalseSafety.body}
         </ConsentRow>
       </fieldset>
       <Alert className="mt-4">
         <Icon name="shield-check" size={16} />
-        <AlertTitle>No false safety</AlertTitle>
-        <AlertDescription>
-          Even after you act, we&rsquo;ll only say a specific adversary can no longer recover an
-          attribute — never that it&rsquo;s &ldquo;safe.&rdquo;
-        </AlertDescription>
+        <AlertTitle>{policy.alert.title}</AlertTitle>
+        <AlertDescription>{policy.alert.body}</AlertDescription>
       </Alert>
     </div>
   );
