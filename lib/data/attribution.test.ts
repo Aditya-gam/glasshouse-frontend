@@ -45,7 +45,7 @@ const WIRE_DETAIL = {
   precision: "city",
   neighborhood: "Alfama",
   reasoning: "Tram 28 photos + the timezone of posts.",
-  candidates: [{ rank: 1, label: "Lisbon, Portugal", note: "" }],
+  candidates: [{ id: "cand_1", rank: 1, label: "Lisbon, Portugal", note: "" }],
   text_only_reliability: null,
   evidence_items: [
     {

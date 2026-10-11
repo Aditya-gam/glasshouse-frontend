@@ -14,6 +14,10 @@ export type AccountRead = {
     connected_accounts: Array<ConnectedAccountRead>;
     consents: ConsentRead;
     /**
+     * Current Policy Version
+     */
+    current_policy_version: string;
+    /**
      * Retention
      */
     retention: 'retain' | 'discard';
@@ -182,9 +186,27 @@ export type BenchmarkRead = {
 };
 
 /**
+ * Body_create_import_v1_imports_post
+ */
+export type BodyCreateImportV1ImportsPost = {
+    /**
+     * Files
+     */
+    files: Array<Blob | File>;
+    /**
+     * Platform
+     */
+    platform: 'reddit' | 'x';
+};
+
+/**
  * Candidate
  */
 export type Candidate = {
+    /**
+     * Id
+     */
+    id: string;
     /**
      * Label
      */
@@ -244,39 +266,54 @@ export type ConnectorStart = {
 };
 
 /**
- * ConsentRead
+ * ConsentGrant
+ *
+ * POST /v1/account/consents — grant one purpose for the CURRENT policy version.
+ *
+ * `policy_version` must equal the account's `current_policy_version`; a grant against a stale
+ * version (the policy changed since the screen was shown) is refused 409, so the stored consent
+ * records the exact text the user agreed to (GDPR Art. 7(1) / Art. 9). Revoke is a path DELETE.
  */
-export type ConsentRead = {
+export type ConsentGrant = {
     /**
-     * Art9
+     * Policy Version
      */
-    art9: boolean;
-    /**
-     * Decoy
-     */
-    decoy: boolean;
+    policy_version: string;
     /**
      * Purpose
      */
-    purpose: boolean;
+    purpose: 'self_audit' | 'art9_inference' | 'decoy';
 };
 
 /**
- * ConsentUpdate
+ * ConsentRead
+ *
+ * The caller's standing consent, one `ConsentState` per purpose (write-paths D4).
  */
-export type ConsentUpdate = {
+export type ConsentRead = {
+    art9_inference: ConsentState;
+    decoy: ConsentState;
+    self_audit: ConsentState;
+};
+
+/**
+ * ConsentState
+ *
+ * One purpose's consent: whether it is granted, and (if so) its policy version + grant time.
+ */
+export type ConsentState = {
     /**
-     * Decoy
+     * Granted
      */
-    decoy?: boolean;
+    granted: boolean;
     /**
-     * Purpose
+     * Granted At
      */
-    purpose: string;
+    granted_at?: string | null;
     /**
-     * Special Category
+     * Policy Version
      */
-    special_category?: boolean;
+    policy_version?: string | null;
 };
 
 /**
@@ -520,7 +557,25 @@ export type Exif = {
 };
 
 /**
+ * ImportPage
+ *
+ * A cursor page of imports, newest first; `next_cursor` is null on the last page (opaque).
+ */
+export type ImportPage = {
+    /**
+     * Items
+     */
+    items: Array<ImportRead>;
+    /**
+     * Next Cursor
+     */
+    next_cursor?: string | null;
+};
+
+/**
  * ImportRead
+ *
+ * An import source + its ingestion run; status is the run's, counts land when it finishes.
  */
 export type ImportRead = {
     /**
@@ -528,21 +583,25 @@ export type ImportRead = {
      */
     created_at?: string | null;
     /**
-     * Dropped
+     * Dropped Count
      */
-    dropped?: number | null;
+    dropped_count?: number | null;
     /**
      * Id
      */
     id: string;
     /**
-     * Kept
+     * Kept Count
      */
-    kept?: number | null;
+    kept_count?: number | null;
     /**
      * Platform
      */
     platform?: string | null;
+    /**
+     * Run Id
+     */
+    run_id?: string | null;
     /**
      * Status
      */
@@ -552,17 +611,40 @@ export type ImportRead = {
 /**
  * InferenceConfirm
  *
- * POST /v1/inferences/{id}/confirm — the user confirms/denies (a live ground-truth signal).
+ * POST /v1/inferences/{id}/confirm — confirm/deny a ranked candidate (a ground-truth signal).
+ *
+ * Takes the candidate **id**, never its value (write-paths D7): a special-category value is never
+ * sent back to the server or stored a second time. The candidate is scoped to the path inference.
  */
 export type InferenceConfirm = {
+    /**
+     * Candidate Id
+     */
+    candidate_id: string;
+    /**
+     * Confirmed
+     */
+    confirmed: boolean;
+};
+
+/**
+ * InferenceConfirmRead
+ *
+ * Echo of the stored feedback (upserted into `inference_feedback`).
+ */
+export type InferenceConfirmRead = {
+    /**
+     * Candidate Id
+     */
+    candidate_id: string;
     /**
      * Confirmed
      */
     confirmed: boolean;
     /**
-     * Value
+     * Inference Id
      */
-    value: string;
+    inference_id: string;
 };
 
 /**
@@ -712,7 +794,7 @@ export type RunPage = {
 /**
  * RunStatus
  *
- * Poll response for a run.
+ * Poll response for a run. `type` ∈ attack | eval | remediation | ingestion | export.
  */
 export type RunStatus = {
     /**
@@ -835,7 +917,7 @@ export type EraseAccountV1AccountDeleteResponses = {
     /**
      * Successful Response
      */
-    202: RunAccepted;
+    204: void;
 };
 
 export type EraseAccountV1AccountDeleteResponse = EraseAccountV1AccountDeleteResponses[keyof EraseAccountV1AccountDeleteResponses];
@@ -887,55 +969,8 @@ export type GetAccountV1AccountGetResponses = {
 
 export type GetAccountV1AccountGetResponse = GetAccountV1AccountGetResponses[keyof GetAccountV1AccountGetResponses];
 
-export type RevokeConsentV1AccountConsentsDeleteData = {
-    body: ConsentUpdate;
-    headers?: {
-        /**
-         * X-Dev-User-Id
-         */
-        'x-dev-user-id'?: string | null;
-    };
-    path?: never;
-    query?: never;
-    url: '/v1/account/consents';
-};
-
-export type RevokeConsentV1AccountConsentsDeleteErrors = {
-    /**
-     * Bad Request
-     */
-    400: Problem;
-    /**
-     * Unauthorized
-     */
-    401: Problem;
-    /**
-     * Not Found
-     */
-    404: Problem;
-    /**
-     * Unprocessable Entity
-     */
-    422: Problem;
-    /**
-     * Not Implemented
-     */
-    501: Problem;
-};
-
-export type RevokeConsentV1AccountConsentsDeleteError = RevokeConsentV1AccountConsentsDeleteErrors[keyof RevokeConsentV1AccountConsentsDeleteErrors];
-
-export type RevokeConsentV1AccountConsentsDeleteResponses = {
-    /**
-     * Successful Response
-     */
-    200: ConsentRead;
-};
-
-export type RevokeConsentV1AccountConsentsDeleteResponse = RevokeConsentV1AccountConsentsDeleteResponses[keyof RevokeConsentV1AccountConsentsDeleteResponses];
-
 export type GrantConsentV1AccountConsentsPostData = {
-    body: ConsentUpdate;
+    body: ConsentGrant;
     headers?: {
         /**
          * X-Dev-User-Id
@@ -961,6 +996,10 @@ export type GrantConsentV1AccountConsentsPostErrors = {
      */
     404: Problem;
     /**
+     * Conflict
+     */
+    409: Problem;
+    /**
      * Unprocessable Entity
      */
     422: Problem;
@@ -976,10 +1015,62 @@ export type GrantConsentV1AccountConsentsPostResponses = {
     /**
      * Successful Response
      */
-    200: ConsentRead;
+    200: AccountRead;
 };
 
 export type GrantConsentV1AccountConsentsPostResponse = GrantConsentV1AccountConsentsPostResponses[keyof GrantConsentV1AccountConsentsPostResponses];
+
+export type RevokeConsentV1AccountConsentsPurposeDeleteData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Dev-User-Id
+         */
+        'x-dev-user-id'?: string | null;
+    };
+    path: {
+        /**
+         * Purpose
+         */
+        purpose: 'self_audit' | 'art9_inference' | 'decoy';
+    };
+    query?: never;
+    url: '/v1/account/consents/{purpose}';
+};
+
+export type RevokeConsentV1AccountConsentsPurposeDeleteErrors = {
+    /**
+     * Bad Request
+     */
+    400: Problem;
+    /**
+     * Unauthorized
+     */
+    401: Problem;
+    /**
+     * Not Found
+     */
+    404: Problem;
+    /**
+     * Unprocessable Entity
+     */
+    422: Problem;
+    /**
+     * Not Implemented
+     */
+    501: Problem;
+};
+
+export type RevokeConsentV1AccountConsentsPurposeDeleteError = RevokeConsentV1AccountConsentsPurposeDeleteErrors[keyof RevokeConsentV1AccountConsentsPurposeDeleteErrors];
+
+export type RevokeConsentV1AccountConsentsPurposeDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type RevokeConsentV1AccountConsentsPurposeDeleteResponse = RevokeConsentV1AccountConsentsPurposeDeleteResponses[keyof RevokeConsentV1AccountConsentsPurposeDeleteResponses];
 
 export type ExportAccountV1AccountExportPostData = {
     body?: never;
@@ -1027,6 +1118,58 @@ export type ExportAccountV1AccountExportPostResponses = {
 };
 
 export type ExportAccountV1AccountExportPostResponse = ExportAccountV1AccountExportPostResponses[keyof ExportAccountV1AccountExportPostResponses];
+
+export type DownloadExportV1AccountExportRunIdGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Dev-User-Id
+         */
+        'x-dev-user-id'?: string | null;
+    };
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/v1/account/export/{run_id}';
+};
+
+export type DownloadExportV1AccountExportRunIdGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: Problem;
+    /**
+     * Unauthorized
+     */
+    401: Problem;
+    /**
+     * Not Found
+     */
+    404: Problem;
+    /**
+     * Unprocessable Entity
+     */
+    422: Problem;
+    /**
+     * Not Implemented
+     */
+    501: Problem;
+};
+
+export type DownloadExportV1AccountExportRunIdGetError = DownloadExportV1AccountExportRunIdGetErrors[keyof DownloadExportV1AccountExportRunIdGetErrors];
+
+export type DownloadExportV1AccountExportRunIdGetResponses = {
+    /**
+     * the encrypted export bundle (owner only; expires)
+     */
+    200: Blob | File;
+};
+
+export type DownloadExportV1AccountExportRunIdGetResponse = DownloadExportV1AccountExportRunIdGetResponses[keyof DownloadExportV1AccountExportRunIdGetResponses];
 
 export type SetRetentionV1AccountRetentionPutData = {
     body: RetentionUpdate;
@@ -1446,18 +1589,20 @@ export type ListImportsV1ImportsGetError = ListImportsV1ImportsGetErrors[keyof L
 
 export type ListImportsV1ImportsGetResponses = {
     /**
-     * Response List Imports V1 Imports Get
-     *
      * Successful Response
      */
-    200: Array<ImportRead>;
+    200: ImportPage;
 };
 
 export type ListImportsV1ImportsGetResponse = ListImportsV1ImportsGetResponses[keyof ListImportsV1ImportsGetResponses];
 
 export type CreateImportV1ImportsPostData = {
-    body?: never;
+    body: BodyCreateImportV1ImportsPost;
     headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'idempotency-key'?: string | null;
         /**
          * X-Dev-User-Id
          */
@@ -1711,7 +1856,7 @@ export type ConfirmInferenceV1InferencesInferenceIdConfirmPostResponses = {
     /**
      * Successful Response
      */
-    200: AttributeFindingRead;
+    200: InferenceConfirmRead;
 };
 
 export type ConfirmInferenceV1InferencesInferenceIdConfirmPostResponse = ConfirmInferenceV1InferencesInferenceIdConfirmPostResponses[keyof ConfirmInferenceV1InferencesInferenceIdConfirmPostResponses];
