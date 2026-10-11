@@ -46,6 +46,19 @@ function makeDuplicateZip(name: string, a: string, b: string): Blob {
   return new Blob([A.local, B.local, A.cd, cdB, eocd] as BlobPart[]);
 }
 
+/**
+ * Forge the declared uncompressed size of a single-member zip's central-directory
+ * entry (u32 at CD offset +24). The cap must trip on this DECLARED size alone —
+ * the member's real bytes stay tiny and are never inflated.
+ */
+function withDeclaredSize(members: Record<string, string>, declaredSize: number): Blob {
+  const z = zipSync(Object.fromEntries(Object.entries(members).map(([n, v]) => [n, text(v)])));
+  const v = new DataView(z.buffer, z.byteOffset, z.byteLength);
+  const cdOffset = v.getUint32(z.length - 22 + 16, true); // via EOCD (no comment)
+  v.setUint32(cdOffset + 24, declaredSize, true);
+  return new Blob([z as BlobPart]);
+}
+
 const COMMENTS =
   "id,permalink,date,ip,subreddit,gildings,link,parent,body\nc1,/r/x,2026-01-01,,,x,,,hello\n";
 const POSTS =
@@ -198,10 +211,11 @@ describe("extractExport — x", () => {
 });
 
 describe("extractExport — caps and corruption", () => {
-  it("over_cap: refused from declared sizes alone, before any inflation", async () => {
-    // 51 MB of zeros compresses to ~50 kB — the fixture is tiny, the declared size is not.
-    const huge = new Uint8Array(51 * 1024 * 1024);
-    const result = await extractExport(makeZip({ ...X_EXPORT, "data/tweets.js": huge }), "x");
+  it("over_cap: refused from the DECLARED size alone, before any inflation", async () => {
+    // The fixture is a few hundred bytes; only its central directory claims 51 MB.
+    // A size-lying archive must be refused without ever inflating the member.
+    const archive = withDeclaredSize({ "data/tweets.js": TWEETS }, 51 * 1024 * 1024);
+    const result = await extractExport(archive, "x");
     expect(result).toMatchObject({ ok: false, code: "over_cap" });
     if (result.ok) throw new Error("unreachable");
     expect(result.message).toContain("51.0 MB");
@@ -241,10 +255,8 @@ describe("extractExport — caps and corruption", () => {
   });
 
   it("over_cap just past the cap never displays total == limit", async () => {
-    const result = await extractExport(
-      makeZip({ "comments.csv": [new Uint8Array(50 * 1024 * 1024 + 1), { level: 6 }] }),
-      "reddit",
-    );
+    const archive = withDeclaredSize({ "comments.csv": COMMENTS }, 50 * 1024 * 1024 + 1);
+    const result = await extractExport(archive, "reddit");
     expect(result).toMatchObject({ ok: false, code: "over_cap" });
     if (result.ok) throw new Error("unreachable");
     expect(result.message).toContain("50.1 MB");
