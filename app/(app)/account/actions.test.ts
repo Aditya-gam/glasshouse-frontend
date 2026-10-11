@@ -13,6 +13,7 @@ vi.mock("@clerk/nextjs/server", () => ({ auth: async () => ({ getToken }) }));
 
 import {
   eraseAccountAction,
+  exportRunStatusAction,
   requestExportAction,
   updateConsentAction,
   updateRetentionAction,
@@ -122,13 +123,18 @@ describe("updateRetentionAction", () => {
     expect(result).toMatchObject({ ok: true, live: true, account: { retention: "discard" } });
   });
 
-  it("501 → demo acknowledgement; bad input → error", async () => {
+  it("501 → demo acknowledgement; bad input → error; network failure → error", async () => {
     server.use(http.put(`${BASE}/v1/account/retention`, stub501));
     await expect(updateRetentionAction({ retention: "discard" })).resolves.toEqual({
       ok: true,
       live: false,
     });
     await expect(updateRetentionAction({ retention: "forever" })).resolves.toEqual({
+      ok: false,
+      code: "error",
+    });
+    server.use(http.put(`${BASE}/v1/account/retention`, () => HttpResponse.error()));
+    await expect(updateRetentionAction({ retention: "discard" })).resolves.toEqual({
       ok: false,
       code: "error",
     });
@@ -152,9 +158,36 @@ describe("requestExportAction", () => {
     });
   });
 
-  it("501 → demo acknowledgement without a run id", async () => {
+  it("501 → demo acknowledgement without a run id; network failure → error", async () => {
     server.use(http.post(`${BASE}/v1/account/export`, stub501));
     await expect(requestExportAction()).resolves.toEqual({ ok: true, live: false });
+    server.use(http.post(`${BASE}/v1/account/export`, () => HttpResponse.error()));
+    await expect(requestExportAction()).resolves.toEqual({ ok: false, code: "error" });
+  });
+});
+
+describe("exportRunStatusAction", () => {
+  const RUN_ID = "11111111-1111-4111-8111-111111111111";
+
+  it("returns the run's status via the existing run read (D2)", async () => {
+    server.use(
+      http.get(`${BASE}/v1/runs/${RUN_ID}`, () =>
+        HttpResponse.json({ id: RUN_ID, type: "export", status: "succeeded" }),
+      ),
+    );
+    await expect(exportRunStatusAction({ runId: RUN_ID })).resolves.toEqual({
+      ok: true,
+      status: "succeeded",
+    });
+  });
+
+  it("rejects a forged run id without calling the backend", async () => {
+    await expect(exportRunStatusAction({ runId: "not-a-uuid" })).resolves.toEqual({ ok: false });
+  });
+
+  it("reports a failed poll as not-ok (the caller keeps polling to its cap)", async () => {
+    server.use(http.get(`${BASE}/v1/runs/${RUN_ID}`, () => HttpResponse.error()));
+    await expect(exportRunStatusAction({ runId: RUN_ID })).resolves.toEqual({ ok: false });
   });
 });
 
