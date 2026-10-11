@@ -153,8 +153,9 @@ describe("OnboardingWizard", () => {
     expect(await screen.findByText(/consent text changed/i)).toBeInTheDocument();
     expect(refresh).toHaveBeenCalled();
     // New text requires new affirmative acts: every box is cleared, continue re-disabled.
+    // (findByRole: the button label swaps back from "Recording…" asynchronously.)
+    expect(await screen.findByRole("button", { name: /I consent & continue/ })).toBeDisabled();
     for (const box of screen.getAllByRole("checkbox")) expect(box).not.toBeChecked();
-    expect(screen.getByRole("button", { name: /I consent & continue/ })).toBeDisabled();
   });
 
   it("disables confirm and Back while the grant is in flight", async () => {
