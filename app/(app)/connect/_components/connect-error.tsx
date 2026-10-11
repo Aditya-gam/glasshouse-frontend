@@ -20,17 +20,27 @@ const SOURCE_HINTS = [
   },
 ];
 
-export function ConnectError({ onRetry }: { onRetry: () => void }) {
+interface ConnectErrorProps {
+  onRetry: () => void;
+  title?: string;
+  message?: string;
+  details?: string;
+}
+
+export function ConnectError({
+  onRetry,
+  title = "Couldn't read that export",
+  message = "We couldn't parse the file — this is almost always the wrong file or a partial download, not a problem on your end. Nothing was imported.",
+  details,
+}: ConnectErrorProps) {
   return (
     <div className="connect-error">
       <ErrorState
-        title="Couldn't read that export"
-        message="We couldn't parse the file — this is almost always the wrong file or a partial download, not a problem on your end. Nothing was imported."
+        title={title}
+        message={message}
         onRetry={onRetry}
         retryLabel="Choose another file"
-        details={
-          "file: twitter-archive.zip\nreason: missing data/tweets.js — not a complete X archive"
-        }
+        details={details}
       />
       <div className="src-hints">
         <div className="src-hints-label">What usually fixes it</div>
