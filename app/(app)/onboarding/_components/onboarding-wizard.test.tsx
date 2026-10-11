@@ -32,8 +32,10 @@ beforeEach(() => {
 
 const POLICY = CONSENT_POLICIES[LATEST_POLICY_VERSION];
 
-function renderWizard(policy: typeof POLICY | null = POLICY) {
-  return render(<OnboardingWizard policyVersion={LATEST_POLICY_VERSION} policy={policy} />);
+function renderWizard(policy: typeof POLICY | null = POLICY, live = true) {
+  return render(
+    <OnboardingWizard policyVersion={LATEST_POLICY_VERSION} policy={policy} live={live} />,
+  );
 }
 
 async function toConsentStep(user: ReturnType<typeof userEvent.setup>) {
@@ -63,20 +65,15 @@ describe("OnboardingWizard", () => {
     expect(screen.getByText(/continue without the optional Article 9 consent/)).toBeInTheDocument();
   });
 
-  it("demo mode: says ACKNOWLEDGED (nothing stored), never 'recorded'", async () => {
+  it("demo mode: no network call, says ACKNOWLEDGED (nothing stored), never 'recorded'", async () => {
     const user = userEvent.setup();
-    renderWizard();
+    renderWizard(POLICY, false);
     await toConsentStep(user);
     await checkRequired(user);
     await user.click(screen.getByRole("button", { name: /I consent & continue/ }));
 
-    await waitFor(() =>
-      expect(grantConsents).toHaveBeenCalledWith({
-        policyVersion: LATEST_POLICY_VERSION,
-        art9: false,
-      }),
-    );
     expect(await screen.findByText("Consent acknowledged — demo")).toBeInTheDocument();
+    expect(grantConsents).not.toHaveBeenCalled();
     expect(screen.getByText(/nothing was stored/)).toBeInTheDocument();
     expect(screen.queryByText("Consent recorded")).not.toBeInTheDocument();
     expect(screen.getByText(/Article 9 — declined/)).toBeInTheDocument();

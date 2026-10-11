@@ -3,12 +3,12 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { LATEST_POLICY_VERSION } from "@/lib/consent/policy";
-import { getAccountConsents } from "@/lib/dal/account";
+import { getAccount } from "@/lib/dal/account";
 import { BackendError } from "@/lib/dal/backend";
-import type { AccountConsents } from "@/lib/schemas/account";
+import type { AccountInfo } from "@/lib/schemas/account";
 
 export interface ConsentContext {
-  account: AccountConsents;
+  account: AccountInfo;
   /** True when `account` came from the backend; false = demo defaults (backend absent). */
   live: boolean;
 }
@@ -16,12 +16,13 @@ export interface ConsentContext {
 const UNGRANTED = { granted: false } as const;
 
 /** Demo standing while the backend is absent: nothing granted, this build's policy text. */
-const DEMO_ACCOUNT: AccountConsents = {
+const DEMO_ACCOUNT: AccountInfo = {
   selfAudit: UNGRANTED,
   art9: UNGRANTED,
   decoy: UNGRANTED,
   retention: "retain",
   currentPolicyVersion: LATEST_POLICY_VERSION,
+  connectedAccounts: [],
 };
 
 /**
@@ -30,7 +31,7 @@ const DEMO_ACCOUNT: AccountConsents = {
  */
 export async function getConsentContext(): Promise<ConsentContext> {
   try {
-    return { account: await getAccountConsents(), live: true };
+    return { account: await getAccount(), live: true };
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err);
     console.warn("[data/consent] live account unavailable - serving demo defaults:", reason);
@@ -58,7 +59,7 @@ function isStubEra(error: unknown): boolean {
 export async function requireSelfAuditConsent(): Promise<void> {
   let granted: boolean;
   try {
-    granted = (await getAccountConsents()).selfAudit.granted;
+    granted = (await getAccount()).selfAudit.granted;
   } catch (error) {
     if (isStubEra(error)) return;
     granted = false; // deny on 4xx/5xx/malformed — never fail open
